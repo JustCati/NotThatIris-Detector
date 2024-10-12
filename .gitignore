@@ -254,3 +254,6 @@ data
 ckpts
 ckpts/*
 test.ipynb
+
+*.pt
+*.pth
