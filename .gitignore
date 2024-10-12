@@ -251,4 +251,6 @@ $RECYCLE.BIN/
 # Own
 data/*
 data
+ckpts
+ckpts/*
 test.ipynb
