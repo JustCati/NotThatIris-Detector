@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from datasets.utils import convert_ann_to_yolo
+from utils.dataset_utils import convert_ann_to_yolo
 
 
 def main(args):
