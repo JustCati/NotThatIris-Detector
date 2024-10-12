@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from src.datasets.yolo_utils import convert_ann_to_yolo
+from datasets.utils import convert_ann_to_yolo
 
 
 def main(args):
@@ -16,8 +16,8 @@ def main(args):
     if not os.path.exists(yolo_portrait_ann):
         os.makedirs(yolo_portrait_ann)
 
-    src_ann_count = sum([len(files) for r, d, files in os.walk(portrait_ann)])
-    dst_ann_count = sum([len(files) for r, d, files in os.walk(yolo_portrait_ann)])
+    src_ann_count = sum([len(files) for _, _, files in os.walk(portrait_ann)])
+    dst_ann_count = sum([len(files) for _, _, files in os.walk(yolo_portrait_ann)])
     if src_ann_count != dst_ann_count:
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann, folder=True)
 
