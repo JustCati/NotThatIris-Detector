@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 
 
@@ -31,7 +32,8 @@ def convert_ann_to_yolo(src_path, dst_path, folder = True):
         src_path = os.path.dirname(src_path)
         dst_path = os.path.dirname(dst_path)
 
-        for path in os.listdir(src_path):
+        print(f'Converting annotations from {src_path} to YOLO format and saving to {dst_path}')
+        for path in tqdm(os.listdir(src_path)):
             mask = Image.open(os.path.join(src_path, path))
             mask = np.array(mask)
             img_h, img_w = mask.shape
