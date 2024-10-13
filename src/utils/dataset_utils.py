@@ -22,19 +22,15 @@ def convert_ann_to_yolo(src_path, dst_path, folder = True):
     if not os.path.exists(dst_path) and folder:
         os.makedirs(dst_path)
 
-    if folder:
-        for path in os.listdir(src_path):
-            if not os.path.isfile(path):
-                if os.path.isfile(os.path.join(src_path, path)):
-                    folder = False
-                convert_ann_to_yolo(os.path.join(src_path, path), os.path.join(dst_path, path), folder)
-    else:
-        src_path = os.path.dirname(src_path)
-        dst_path = os.path.dirname(dst_path)
+    for folder in os.listdir(src_path):
+        folder_path = os.path.join(src_path, folder)
+        dst_folder_path = os.path.join(dst_path, folder)
+        if not os.path.exists(dst_folder_path):
+            os.makedirs(dst_folder_path)
 
-        print(f'Converting annotations from {src_path} to YOLO format and saving to {dst_path}')
-        for path in tqdm(os.listdir(src_path)):
-            mask = Image.open(os.path.join(src_path, path))
+        print(f'Converting annotations from {folder_path} to YOLO format and saving to {dst_folder_path}')
+        for path in tqdm(os.listdir(folder_path)):
+            mask = Image.open(os.path.join(folder_path, path))
             mask = np.array(mask)
             img_h, img_w = mask.shape
 
@@ -62,6 +58,6 @@ def convert_ann_to_yolo(src_path, dst_path, folder = True):
                     bboxes.append([label, x_center, y_center, w, h])
             file_extension = path.split('.')[-1]
             path = path.replace(file_extension, 'txt')
-            with open(os.path.join(dst_path, path), 'w') as f:
+            with open(os.path.join(dst_folder_path, path), 'w') as f:
                 for bbox in bboxes:
                     f.write(' '.join(map(str, bbox)) + '\n')
