@@ -26,8 +26,16 @@ def main(args):
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
     portrait_dataset_path = os.path.join(data_path, 'EasyPortrait')
+    portrait_train = os.path.join('images', "train")
+    portrait_val = os.path.join('images', "test")
     portrait_ann = os.path.join(portrait_dataset_path, 'annotations')
-    yolo_portrait_ann = os.path.join(portrait_dataset_path, 'ann')
+    yolo_portrait_ann = os.path.join(portrait_dataset_path, 'labels')
+    easy_portrait_yaml_path = os.path.join(portrait_dataset_path, 'easy_portrait.yaml')
+
+    #* Format yaml file
+    if not os.path.exists(easy_portrait_yaml_path):
+        raise ValueError('Easy portrait yaml file does not exist')
+    easy_portrait_yaml = read_yaml(easy_portrait_yaml_path, portrait_dataset_path, portrait_train, portrait_val)
 
     if not os.path.exists(yolo_portrait_ann):
         os.makedirs(yolo_portrait_ann)

@@ -2,7 +2,7 @@ import os
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
-
+from tempfile import NamedTemporaryFile
 
 
 CLASSESS = {
@@ -15,6 +15,22 @@ CONVERT_CLASS = {
     5 : 2,
     6 : 3
 }
+
+
+
+
+def read_yaml(yaml_path, DATA_PATH, TRAIN_PATH, VAL_PATH):
+    easy_portrai_yaml = None
+    with open(yaml_path, 'r') as f:
+        easy_portrai_yaml = f.read()
+
+    easy_portrai_yaml = easy_portrai_yaml.replace('DATA_PATH', DATA_PATH)
+    easy_portrai_yaml = easy_portrai_yaml.replace('TRAIN_PATH', TRAIN_PATH)
+    easy_portrai_yaml = easy_portrai_yaml.replace('VAL_PATH', VAL_PATH)
+
+    with NamedTemporaryFile('w', delete=False) as f:
+        f.write(easy_portrai_yaml)
+        return f.name
 
 
 
