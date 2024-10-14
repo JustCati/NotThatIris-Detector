@@ -1,9 +1,8 @@
 import os
 import argparse
 
-from src.models.yolo import getYOLO
 from src.utils.utils import get_device
-from src.engines.YOLO.train import train as yolo_train
+from src.models.yolo import getYOLO, train as yolo_train
 from src.utils.dataset_utils import convert_ann_to_yolo, read_yaml
 
 import warnings
@@ -55,6 +54,16 @@ def main(args):
     yolo_model = getYOLO(checkpoint_path=yolo_checkpoint_path, device=device)
     print("YOLO model loaded successfully")
 
+    # #* Train YOLO model
+    batch_size = args.batch_size
+    epochs = args.epochs
+    if pull_from_scratch:
+        yolo_train(model=yolo_model, 
+                   yaml_file=easy_portrait_yaml,
+                   batch_size=batch_size,
+                   epochs=epochs,
+                   model_path=yolo_model_path,
+                   device=device)
 
 
 
@@ -65,5 +74,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default='data', help='Path to data folder')
     parser.add_argument('--model_path', type=str, default='ckpts', help='Path to model checkpoints folder')
+    parser.add_argument('--epochs', type=int, default=1, help='Number of epochs to train')
+    parser.add_argument('--batch_size', type=int, default=1, help='Batch size for training')
     args = parser.parse_args()
     main(args)
