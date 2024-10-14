@@ -42,6 +42,8 @@ def main(args):
 
     src_ann_count = sum([len(files) for _, _, files in os.walk(portrait_ann)])
     dst_ann_count = sum([len(files) for _, _, files in os.walk(yolo_portrait_ann)])
+    if "train.cache" in os.listdir(yolo_portrait_ann) and "test.cache" in os.listdir(yolo_portrait_ann):
+        dst_ann_count -= 2
     if src_ann_count != dst_ann_count:
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann)
 
