@@ -47,8 +47,7 @@ def main(args):
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann)
 
     #* Load YOLO model
-    pull_from_scratch = ("model.pt" not in os.listdir(yolo_model_path))
-    yolo_checkpoint_path = os.path.join("models", "yolov10l.pt") if pull_from_scratch else os.path.join(yolo_model_path, 'model.pt')
+    yolo_checkpoint_path = os.path.join("models", "yolov10l.pt")
     device = get_device()
 
     yolo_model = getYOLO(checkpoint_path=yolo_checkpoint_path, device=device)
@@ -57,13 +56,12 @@ def main(args):
     # #* Train YOLO model
     batch_size = args.batch_size
     epochs = args.epochs
-    if pull_from_scratch:
-        yolo_train(model=yolo_model, 
-                   yaml_file=easy_portrait_yaml,
-                   batch_size=batch_size,
-                   epochs=epochs,
-                   model_path=yolo_model_path,
-                   device=device)
+    yolo_train(model=yolo_model, 
+                yaml_file=easy_portrait_yaml,
+                batch_size=batch_size,
+                epochs=epochs,
+                model_path=yolo_model_path,
+                device=device)
 
 
 
