@@ -3,8 +3,8 @@ import argparse
 
 from src.models.yolo import getYOLO
 from src.utils.utils import get_device
-from src.utils.dataset_utils import convert_ann_to_yolo
 from src.engines.YOLO.train import train as yolo_train
+from src.utils.dataset_utils import convert_ann_to_yolo, read_yaml
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -25,7 +25,7 @@ def main(args):
 
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
-    portrait_dataset_path = os.path.join(data_path, 'EasyPortrait')
+    portrait_dataset_path = os.path.join(os.path.dirname(__file__), data_path, 'EasyPortrait')
     portrait_train = os.path.join('images', "train")
     portrait_val = os.path.join('images', "test")
     portrait_ann = os.path.join(portrait_dataset_path, 'annotations')
