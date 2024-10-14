@@ -11,15 +11,15 @@ CLASSESS = {
     "right_eye" : 6
 }
 CONVERT_CLASS = {
-    2 : 0,
-    5 : 1,
-    6 : 2
+    2 : 1,
+    5 : 2,
+    6 : 3
 }
 
 
 
-def convert_ann_to_yolo(src_path, dst_path, folder = True):
-    if not os.path.exists(dst_path) and folder:
+def convert_ann_to_yolo(src_path, dst_path):
+    if not os.path.exists(dst_path):
         os.makedirs(dst_path)
 
     for folder in os.listdir(src_path):
