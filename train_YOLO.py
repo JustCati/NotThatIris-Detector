@@ -34,11 +34,6 @@ def main(args):
     yolo_portrait_ann = os.path.join(portrait_dataset_path, 'labels')
     easy_portrait_yaml_path = os.path.join(portrait_dataset_path, 'easy_portrait.yaml')
 
-    #* Format yaml file
-    if not os.path.exists(easy_portrait_yaml_path):
-        raise ValueError('Easy portrait yaml file does not exist')
-    easy_portrait_yaml = read_yaml(easy_portrait_yaml_path, portrait_dataset_path, portrait_train, portrait_val)
-
     if not os.path.exists(yolo_portrait_ann):
         os.makedirs(yolo_portrait_ann)
 
@@ -48,6 +43,11 @@ def main(args):
         dst_ann_count -= 2
     if src_ann_count != dst_ann_count:
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann)
+
+    #* Format yaml file
+    if not os.path.exists(easy_portrait_yaml_path):
+        raise ValueError('Easy portrait yaml file does not exist')
+    easy_portrait_yaml = read_yaml(easy_portrait_yaml_path, portrait_dataset_path, portrait_train, portrait_val)
 
     #* Load YOLO model
     device = get_device()
