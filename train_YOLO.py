@@ -3,7 +3,7 @@ import argparse
 
 from src.utils.utils import get_device
 from src.models.yolo import getYOLO, train as yolo_train
-from src.utils.dataset_utils import convert_ann_to_yolo, read_yaml
+from utils.dataset_utils.yolo import convert_ann_to_yolo, read_yaml
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -14,13 +14,16 @@ def main(args):
     data_path = args.path
     if not os.path.exists(data_path):
         raise ValueError('Data path does not exist')
+
+    scratch = False
     model_path = args.model_path
+    if model_path[-1] == "/":
+        model_path = model_path[:-1]
+    if model_path == '':
+        scratch = True
+        model_path = os.path.join(os.path.dirname(__file__), 'ckpt', "YOLO")
     if not os.path.exists(model_path):
         os.makedirs(model_path)
-
-    yolo_model_path = os.path.join(model_path, 'YOLO')
-    if not os.path.exists(yolo_model_path):
-        os.makedirs(yolo_model_path)
 
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
@@ -47,20 +50,21 @@ def main(args):
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann)
 
     #* Load YOLO model
-    yolo_checkpoint_path = os.path.join("models", "yolov10l.pt")
     device = get_device()
+    yolo_checkpoint_path = os.path.join("models", "yolov10l.pt") if scratch else os.path.join(model_path, "weights", "last.pt")
 
     yolo_model = getYOLO(checkpoint_path=yolo_checkpoint_path, device=device)
     print("YOLO model loaded successfully")
 
     # #* Train YOLO model
-    batch_size = args.batch_size
     epochs = args.epochs
+    batch_size = args.batch_size
     yolo_train(model=yolo_model, 
                 yaml_file=easy_portrait_yaml,
                 batch_size=batch_size,
                 epochs=epochs,
-                model_path=yolo_model_path,
+                model_path=model_path if scratch else os.path.dirname(model_path),
+                resume=not scratch,
                 device=device)
 
 
@@ -71,7 +75,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default='data', help='Path to data folder')
-    parser.add_argument('--model_path', type=str, default='ckpts', help='Path to model checkpoints folder')
+    parser.add_argument('--model_path', type=str, default='', help='Path to model checkpoints folder')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs to train')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size for training')
     args = parser.parse_args()
