@@ -12,7 +12,7 @@ def getYOLO(checkpoint_path: str, device: str = 'cpu') -> YOLOv10:
     return model
 
 
-def train(model: YOLOv10, yaml_file: str, epochs: int, batch_size: int, model_path: str, device: str = 'cuda'):
+def train(model: YOLOv10, yaml_file: str, epochs: int, batch_size: int, model_path: str, resume: bool = False, device: str = 'cuda'):
     cpu_workers = multiprocessing.cpu_count()
     results = model.train(data=yaml_file, 
                           batch=batch_size,
@@ -20,8 +20,9 @@ def train(model: YOLOv10, yaml_file: str, epochs: int, batch_size: int, model_pa
                           epochs=epochs,
                           verbose=True,
                           workers=cpu_workers,
-                          save_period=1,
+                          save_period=5,
                           device=device,
+                          resume=resume,
                           val=True,
                           plots=True,
                           project = model_path,
