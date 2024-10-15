@@ -3,7 +3,7 @@ import argparse
 
 from src.utils.utils import get_device
 from src.models.yolo import getYOLO, train as yolo_train
-from utils.dataset_utils.yolo import convert_ann_to_yolo, read_yaml
+from src.utils.dataset_utils.yolo import convert_ann_to_yolo, read_yaml
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -51,7 +51,8 @@ def main(args):
 
     #* Load YOLO model
     device = get_device()
-    yolo_checkpoint_path = os.path.join("models", "yolov10l.pt") if scratch else os.path.join(model_path, "weights", "last.pt")
+    model_file = args.checkpoint if args.checkpoint != '' else 'last.pt'
+    yolo_checkpoint_path = os.path.join("models", "yolov10l.pt") if scratch else os.path.join(model_path, "weights", model_file)
 
     yolo_model = getYOLO(checkpoint_path=yolo_checkpoint_path, device=device)
     print("YOLO model loaded successfully")
@@ -75,8 +76,9 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default='data', help='Path to data folder')
-    parser.add_argument('--model_path', type=str, default='', help='Path to model checkpoints folder')
+    parser.add_argument('--model_path', type=str, default='/', help='Path to model checkpoints folder')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs to train')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size for training')
+    parser.add_argument('--checkpoint', type=str, default='', help='Name of checkpoint file to resume training')
     args = parser.parse_args()
     main(args)
