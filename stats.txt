@@ -1,0 +1,5 @@
+AREA -> Median: 3255.0 Mean: 4781.2383531960995
+
+Widths -> Median: 126.0 Mean: 266.66356152713604
+
+Heights -> Median: 52.0 Mean: 303.38848814275
