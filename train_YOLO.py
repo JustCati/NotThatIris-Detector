@@ -65,6 +65,7 @@ def main(args):
                 batch_size=batch_size,
                 epochs=epochs,
                 model_path=model_path if scratch else os.path.dirname(model_path),
+                folder_name=os.path.basename(model_path) if not scratch else "YOLOv10",
                 resume=not scratch,
                 device=device)
 
