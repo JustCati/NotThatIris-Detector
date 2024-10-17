@@ -21,7 +21,7 @@ def main(args):
         model_path = model_path[:-1]
     if model_path == '':
         scratch = True
-        model_path = os.path.join(os.path.dirname(__file__), 'ckpt', "YOLO")
+        model_path = os.path.join(os.path.dirname(__file__), 'ckpts', "YOLO")
     if not os.path.exists(model_path):
         os.makedirs(model_path)
 
