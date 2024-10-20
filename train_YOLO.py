@@ -64,6 +64,7 @@ def main(args):
                 yaml_file=easy_portrait_yaml,
                 batch_size=batch_size,
                 epochs=epochs,
+                patience=args.patience,
                 model_path=model_path if scratch else os.path.dirname(model_path),
                 folder_name=os.path.basename(model_path) if not scratch else "YOLOv10",
                 resume=not scratch,
@@ -79,6 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--path', type=str, default='data', help='Path to data folder')
     parser.add_argument('--model_path', type=str, default='/', help='Path to model checkpoints folder')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs to train')
+    parser.add_argument('--patience', type=int, default=0, help='Patience for early stopping')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size for training')
     parser.add_argument('--checkpoint', type=str, default='', help='Name of checkpoint file to resume training')
     args = parser.parse_args()
