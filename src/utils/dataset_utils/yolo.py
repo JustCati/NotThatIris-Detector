@@ -13,7 +13,7 @@ CLASSESS = {
 CONVERT_CLASS = {
     2 : 0,
     5 : 1,
-    6 : 2
+    6 : 1 # Both eyes are the same class, 2 to set as left eye
 }
 
 
