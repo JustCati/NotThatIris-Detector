@@ -15,7 +15,9 @@ def main(args):
     images_path = os.path.join(iris_path, 'images')
     dataset_path = os.path.join(iris_path, 'data')
 
-    create_dataset(images_path, dataset_path)
+    SCALE_FACTOR = args.down_scale_factor
+    hq_path = create_dataset(images_path, dataset_path)
+    generate_lq_images(hq_path, SCALE_FACTOR)
 
 
 
@@ -23,5 +25,6 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default='data', help='directory of the data')
+    parser.add_argument('--down_scale_factor', type=int, default=4, help='down scale factor for generating low quality images')
     args = parser.parse_args()
     main(args)
