@@ -23,4 +23,7 @@ def create_dataset(src_path, dst_path):
             filename, file_ext = os.path.splitext(file)
             dst_file_path = filename + "_" + str(idx) + file_ext
             shutil.copy(file, os.path.join(dst_path, os.path.basename(dst_file_path)))
+        for file in os.listdir(dst_path):
+            if file.startswith("Thumbs"):
+                os.remove(os.path.join(dst_path, file))
     return dst_path
