@@ -249,8 +249,8 @@ $RECYCLE.BIN/
 *.fatbin
 
 # Own
-data/*
-data
+datasets/*
+datasets
 ckpts
 ckpts/*
 test.ipynb
