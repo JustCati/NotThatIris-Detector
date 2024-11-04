@@ -77,7 +77,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, default='data', help='Path to data folder')
+    parser.add_argument('--path', type=str, default='datasets', help='Path to data folder')
     parser.add_argument('--model_path', type=str, default='/', help='Path to model checkpoints folder')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs to train')
     parser.add_argument('--patience', type=int, default=0, help='Patience for early stopping')
