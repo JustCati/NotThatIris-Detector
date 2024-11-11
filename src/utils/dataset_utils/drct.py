@@ -126,8 +126,8 @@ def create_dataset(src_path, dst_path, scaling_factor, train_split_ratio=0.8):
 
     train_path = os.path.join(os.path.dirname(dst_path), 'train')
     dst_file_count = sum([len(files) for _, _, files in os.walk(dst_path)])
-    train_count = sum([len(files) for _, _, files in os.walk(train_path)])
+    train_count = sum([len(files) for _, _, files in os.walk(train_path)]) // 2
 
-    if train_count != (train_split_ratio * dst_file_count):
-        print("Splitting dataset")
+    if train_count != (int(train_split_ratio * dst_file_count)):
+        print(f"Found {train_count} images in the train folder instead of {train_split_ratio * dst_file_count}, splitting dataset...")
         split_dataset(dst_path, os.path.dirname(dst_path), train_split_ratio)
