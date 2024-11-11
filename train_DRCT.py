@@ -37,6 +37,7 @@ if __name__ == '__main__':
     parser.add_argument('--path', type=str, default='datasets', help='directory of the data')
     parser.add_argument("--train", type=bool, default=True, help='train or test')
     parser.add_argument("-opt", type=str, default='', help='path to the option yaml file')
+    parser.add_argument('--force_yml', nargs='+', default=None, help='Force to update yml files. Examples: train:ema_decay=0.999')
     parser.add_argument('--down_scale_factor', type=int, default=4, help='down scale factor for generating low quality images')
     args = parser.parse_args()
     main(args)
