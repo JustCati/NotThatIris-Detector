@@ -57,7 +57,7 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: ./models/DRCT-L_X4.pth
+  pretrain_network_g: ./models/pretrained/DRCT-L_X4.pth
   param_key_g: 'params_ema'
   strict_load_g: true
   resume_state: ~
@@ -105,8 +105,8 @@ val:
 
 # logging settings
 logger:
-  print_freq: 100
-  save_checkpoint_freq: !!float 5e3
+  print_freq: 50
+  save_checkpoint_freq: !!float 1e3
   use_tb_logger: true
   wandb:
     project: ~

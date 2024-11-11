@@ -52,7 +52,7 @@ def main(args):
     #* Load YOLO model
     device = get_device()
     model_file = args.checkpoint if args.checkpoint != '' else 'last.pt'
-    yolo_checkpoint_path = os.path.join("models", "yolov10l.pt") if scratch else os.path.join(model_path, "weights", model_file)
+    yolo_checkpoint_path = os.path.join("models", "pretrained", "yolov10l.pt") if scratch else os.path.join(model_path, "weights", model_file)
 
     yolo_model = getYOLO(checkpoint_path=yolo_checkpoint_path, device=device)
     print("YOLO model loaded successfully")
