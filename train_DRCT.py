@@ -23,7 +23,7 @@ def main(args):
     dataset_path = osp.join(iris_path, 'data')
     ckpt_path = osp.join('ckpts', 'DRCT')
 
-    TRAIN_SPLIT_RATIO = 0.8
+    TRAIN_SPLIT_RATIO = 0.999
     SCALE_FACTOR = args.down_scale_factor
     create_dataset(images_path, dataset_path, SCALE_FACTOR, TRAIN_SPLIT_RATIO)
 
