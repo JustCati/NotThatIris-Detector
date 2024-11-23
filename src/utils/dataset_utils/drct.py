@@ -4,14 +4,17 @@ import random
 from PIL import Image
 import multiprocessing
 from pqdm.threads import pqdm
+from torchvision.transforms import v2 as T
 
 
 def resize_image(file, dst_path, scale_factor):
     img = Image.open(file)
-    h, w = img.size
-    new_h, new_w = h // scale_factor, w // scale_factor
-
-    img = img.resize((new_h, new_w), Image.BICUBIC)
+    pipeline = T.Compose([
+        T.Resize((img.size[1] // scale_factor, img.size[0] // scale_factor), interpolation=Image.BICUBIC),
+        T.GaussianBlur(5, 1.5),
+        T.JPEG(quality=(25, 40)),
+    ])
+    img = pipeline(img)
     img.save(os.path.join(dst_path, os.path.basename(file)))
 
 
