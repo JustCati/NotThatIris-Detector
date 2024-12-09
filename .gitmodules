@@ -1,3 +1,6 @@
 [submodule "external/DRCT"]
 	path = external/DRCT
 	url = git@github.com:ming053l/DRCT.git
+[submodule "external/osiris"]
+	path = external/osiris
+	url = git@github.com:Mango233/Osiris.git
