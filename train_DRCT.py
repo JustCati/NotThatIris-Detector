@@ -20,7 +20,7 @@ def main(args):
 
     iris_path = osp.join(data_path, 'Iris-Thousand')
     images_path = osp.join(iris_path, 'images')
-    dataset_path = osp.join(iris_path, 'data')
+    dataset_path = osp.join(iris_path, 'sr')
     ckpt_path = osp.join('ckpts', 'DRCT')
 
     TRAIN_SPLIT_RATIO = 0.999

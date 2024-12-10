@@ -10,8 +10,8 @@ datasets:
   train:
     name: Iris-Thousand
     type: PairedImageDataset
-    dataroot_gt: ./datasets/Iris-Thousand/data/train/hq
-    dataroot_lq: ./datasets/Iris-Thousand/data/train/lq
+    dataroot_gt: ./datasets/Iris-Thousand/sr/train/hq
+    dataroot_lq: ./datasets/Iris-Thousand/sr/train/lq
     #meta_info_file: drct/data/meta_info/meta_info_DF2Ksub_GT.txt
     io_backend:
       type: disk
