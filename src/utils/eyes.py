@@ -39,7 +39,7 @@ def recflection_remove(img):
     return dst
 
 
-def iris_hough_detector(image_path, r):
+def iris_hough_detector(image_path, r = 40):
     success = False
     image = cv2.imread(image_path) if isinstance(image_path, str) else cv2.cvtColor(image_path, cv2.COLOR_BGR2RGB)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
