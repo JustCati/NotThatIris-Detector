@@ -59,11 +59,10 @@ def iris_hough_detector(image_path, r):
         circles = circles[0, :, :]
         circles = np.int16(np.array(circles))
         for i in circles[:]:
-            coords = [i[1] - i[2] - r, i[1] + i[2] + r, i[0] - i[2] - r, i[0] + i[2] + r]
             image = image[i[1] - i[2] - r:i[1] + i[2] + r, i[0] - i[2] -r:i[0] + i[2] + r]
             radius = i[2]
         success = True
-        return image, coords, radius, success
+        return image, radius, success
     except:
         image[:] = 255
         success = False
