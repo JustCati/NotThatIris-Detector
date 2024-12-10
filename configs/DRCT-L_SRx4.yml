@@ -30,8 +30,8 @@ datasets:
   val_1:
     name: Iris-Thousand
     type: PairedImageDataset
-    dataroot_gt: ./datasets/Iris-Thousand/data/val/hq
-    dataroot_lq: ./datasets/Iris-Thousand/data/val/lq
+    dataroot_gt: ./datasets/Iris-Thousand/sr/val/hq
+    dataroot_lq: ./datasets/Iris-Thousand/sr/val/lq
     io_backend:
       type: disk
 
