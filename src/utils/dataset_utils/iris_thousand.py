@@ -35,7 +35,7 @@ def normalize_iris_thousand(dataset_path, csv_path):
 
     df.drop(columns=["ImagePath"], inplace=True)
     df.rename(columns={"outputPath": "ImagePath"}, inplace=True)
-    df.to_csv(csv_path)
+    df.to_csv(csv_path.replace("iris_thousands.csv", "normalized_iris.csv"))
 
 
 if __name__ == "__main__":
