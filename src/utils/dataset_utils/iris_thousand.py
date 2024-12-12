@@ -35,10 +35,36 @@ def normalize_iris_thousand(dataset_path, csv_path):
 
     df.drop(columns=["ImagePath"], inplace=True)
     df.rename(columns={"outputPath": "ImagePath"}, inplace=True)
-    df.to_csv(csv_path.replace("iris_thousands.csv", "normalized_iris.csv"))
+
+    out_path = csv_path.replace("iris_thousands.csv", "normalized_iris.csv")
+    df.to_csv(out_path)
+    return out_path
+
+
+
+def split_iris_thousand(csv_path, train_ration=0.8):
+    df = pd.read_csv(csv_path, index_col=0)
+    df = df.sample(frac=1, random_state=4242).reset_index(drop=True)
+
+    train_df = df.iloc[:int(len(df)*train_ration)]
+    test_df = df.iloc[int(len(df)*train_ration):]
+
+    assert len(train_df) + len(test_df) == len(df)
+    assert train_df.index.intersection(test_df.index).empty
+
+    train_df.reset_index(drop=True, inplace=True)
+    test_df.reset_index(drop=True, inplace=True)
+
+    train_df.to_csv(csv_path.replace("iris_thousands.csv", "train_iris.csv"))
+    test_df.to_csv(csv_path.replace("iris_thousands.csv", "test_iris.csv"))
+
+
 
 
 if __name__ == "__main__":
     dataset_path = os.path.join(os.getcwd(), "datasets", "Iris-Thousand", "images")
     csv_path = os.path.join(os.getcwd(), "datasets", "Iris-Thousand", "iris_thousands.csv")
-    normalize_iris_thousand(dataset_path, csv_path)
+
+    # output_csv = normalize_iris_thousand(dataset_path, csv_path)
+    output_csv = os.path.join(os.getcwd(), "datasets", "Iris-Thousand", "normalized_iris.csv")
+    split_iris_thousand(output_csv)
