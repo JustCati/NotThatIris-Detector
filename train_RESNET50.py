@@ -4,10 +4,8 @@ import argparse
 from torch.utils.data import DataLoader
 
 import lightning as L
-from pytorch_lightning.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
-from lightning.pytorch.callbacks.early_stopping import EarlyStopping
-
+from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 
 from src.models.resnet import Resnet
 from src.dataset.iris_thousand import IrisThousand
@@ -19,6 +17,9 @@ def main(args):
     root_dir = args.output_path
     dataset_path = args.dataset_path
 
+    L.seed_everything(4242, workers=True)
+    torch.set_float32_matmul_precision("high")
+
     images_path = os.path.join(dataset_path, "images")
     train_csv_path = os.path.join(dataset_path, "train_iris.csv")
     test_csv_path = os.path.join(dataset_path, "test_iris.csv")
@@ -27,10 +28,7 @@ def main(args):
     eval_dataset = IrisThousand(test_csv_path, images_path)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
-
-    L.seed_everything(4242, workers=True)
-    torch.set_float32_matmul_precision("high")
+    eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
 
     model = Resnet(args.batch_size, args.num_classes)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
@@ -58,7 +56,7 @@ def main(args):
         default_root_dir=root_dir,   
         max_epochs=args.num_epochs,
         accelerator="gpu",
-        logger=csv_logger,
+        logger=[csv_logger, tb_logger],
         callbacks=[best_checkpoint_saver]#, early_stop_callback]
         )
 
