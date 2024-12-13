@@ -26,8 +26,8 @@ def main(args):
     train_dataset = IrisThousand(train_csv_path, images_path)
     eval_dataset = IrisThousand(test_csv_path, images_path)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=512, shuffle=True)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=512, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
 
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
@@ -46,13 +46,13 @@ def main(args):
         save_last=True
         )
 
-    early_stop_callback = EarlyStopping(
-        monitor="f1",
-        min_delta=0.05,
-        patience=100,
-        verbose=False, 
-        mode="max"
-        )
+    # early_stop_callback = EarlyStopping(
+    #     monitor="f1",
+    #     min_delta=0.05,
+    #     patience=100,
+    #     verbose=False, 
+    #     mode="max"
+    #     )
 
     trainer = L.Trainer(
         default_root_dir=root_dir,   
