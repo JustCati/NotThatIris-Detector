@@ -9,8 +9,9 @@ from torch.utils.data import Dataset
 class IrisThousand(Dataset):
     def __init__(self, csv_file, dataset_path, original_csv_file, transform=None):
         self.transform = transform
-        self.label_map = self.__create_label_map(original_csv_file)
         self.gt = self.__process_df(csv_file, dataset_path)
+        self.label_map = self.__create_label_map(original_csv_file)
+        self.num_classes = len(self.label_map)
 
 
     def __create_label_map(self, original_csv_file):
