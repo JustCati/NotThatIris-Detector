@@ -34,7 +34,7 @@ def main(args):
 
     model = Resnet(args.batch_size, args.num_classes)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
-
+    tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="iris-thousand", version=csv_logger.version)
 
     best_checkpoint_saver = ModelCheckpoint(
         dirpath=os.path.join(root_dir, "models"),
