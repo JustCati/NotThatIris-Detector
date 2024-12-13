@@ -38,7 +38,7 @@ def main(args):
         dirpath=os.path.join(root_dir, "models"),
         filename="best",
         save_top_k=1,
-        monitor="f1",
+        monitor="eval/f1",
         mode="max",
         verbose=True,
         save_last=True
