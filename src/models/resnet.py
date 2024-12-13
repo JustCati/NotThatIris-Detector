@@ -17,6 +17,7 @@ class Resnet(L.LightningModule):
         self.batch_size = batch_size
         self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
+        print(self.model)
 
 
     def forward(self, x):
