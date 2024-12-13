@@ -21,14 +21,21 @@ def main(args):
     torch.set_float32_matmul_precision("high")
 
     images_path = os.path.join(dataset_path, "images")
-    train_csv_path = os.path.join(dataset_path, "train_iris.csv")
     test_csv_path = os.path.join(dataset_path, "test_iris.csv")
+    train_csv_path = os.path.join(dataset_path, "train_iris.csv")
+    complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
 
-    train_dataset = IrisThousand(train_csv_path, images_path)
-    eval_dataset = IrisThousand(test_csv_path, images_path)
+    if not os.path.exists(images_path):
+        raise FileNotFoundError(f"Images path not found: {images_path}")
+    if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path):
+        out_path = normalize_iris_thousand(images_path, os.path.join(dataset_path, "iris_thousands.csv"))
+        split_iris_thousand(out_path)
+
+    train_dataset = IrisThousand(train_csv_path, images_path, complete_csv_path)
+    eval_dataset = IrisThousand(test_csv_path, images_path, complete_csv_path)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
 
     model = Resnet(args.batch_size, args.num_classes)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")

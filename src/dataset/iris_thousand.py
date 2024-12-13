@@ -7,9 +7,16 @@ from torch.utils.data import Dataset
 
 
 class IrisThousand(Dataset):
-    def __init__(self, csv_file, dataset_path, transform=None):
+    def __init__(self, csv_file, dataset_path, original_csv_file, transform=None):
         self.transform = transform
-        self.gt, self.label_map = self.__process_df(csv_file, dataset_path)
+        self.label_map = self.__create_label_map(original_csv_file)
+        self.gt = self.__process_df(csv_file, dataset_path)
+
+
+    def __create_label_map(self, original_csv_file):
+        df = pd.read_csv(original_csv_file, index_col=0)
+        label_map = {label: i for i, label in enumerate(df["Label"].unique())}
+        return label_map
 
 
     def __process_df(self, csv_file, dataset_path):
@@ -20,9 +27,7 @@ class IrisThousand(Dataset):
                 dataset_path
             )
         )
-        df = df.reset_index(drop=True)
-        label_map = {label: i for i, label in enumerate(sorted(df["Label"].unique()))}
-        return df, label_map
+        return df
 
 
     def __getitem__(self, idx):
