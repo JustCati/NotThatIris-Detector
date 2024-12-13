@@ -29,7 +29,7 @@ class Resnet(L.LightningModule):
         y_hat = self(x.to(self.device))
 
         loss = nn.CrossEntropyLoss()(y_hat, y)
-        self.log("train_loss", loss)
+        self.log("train/train_loss", loss)
         return loss
 
 
@@ -37,10 +37,14 @@ class Resnet(L.LightningModule):
         x, y = batch
         y_hat = self(x.to(self.device))
 
+        y_for_loss = y.view(-1).long()
+        loss = nn.CrossEntropyLoss()(y_hat, y_for_loss)
+        self.log("eval/val_loss", loss)
+
         y = y.cpu().numpy()
         y_hat = y_hat.argmax(dim=1).cpu().numpy()
         f1 = f1_score(y, y_hat, average="macro")
-        self.log("f1", f1)
+        self.log("eval/f1", f1)
 
 
     def configure_optimizers(self):
