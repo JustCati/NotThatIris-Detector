@@ -37,7 +37,7 @@ def main(args):
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
 
-    model = Resnet(args.batch_size, args.num_classes)
+    model = Resnet(num_classes=train_dataset.num_classes, batch_size=args.batch_size)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
     tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="iris-thousand", version=csv_logger.version)
 
@@ -78,8 +78,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
     parser.add_argument("--output_path", type=str, default=os.path.join(os.path.dirname(__file__), "ckpts", "RESNET50"))
-    parser.add_argument("--num_epochs", type=int, default=1_000)
+    parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--num_classes", type=int, default=2000)
     args = parser.parse_args()
     main(args)
