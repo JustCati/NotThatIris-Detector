@@ -4,12 +4,12 @@ import argparse
 from torch.utils.data import DataLoader
 
 import lightning as L
-from lightning.pytorch.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
 from src.models.resnet import Resnet
 from src.dataset.iris_thousand import IrisThousand
-
+from src.utils.dataset_utils.iris_thousand import normalize_iris_thousand, split_iris_thousand
 
 
 
@@ -51,20 +51,20 @@ def main(args):
         save_last=True
         )
 
-    # early_stop_callback = EarlyStopping(
-    #     monitor="f1",
-    #     min_delta=0.05,
-    #     patience=100,
-    #     verbose=False, 
-    #     mode="max"
-    #     )
+    early_stop_callback = EarlyStopping(
+        monitor="eval/f1",
+        min_delta=0.006,
+        patience=5,
+        verbose=False, 
+        mode="max"
+        )
 
     trainer = L.Trainer(
         default_root_dir=root_dir,   
         max_epochs=args.num_epochs,
         accelerator="gpu",
         logger=[csv_logger, tb_logger],
-        callbacks=[best_checkpoint_saver]#, early_stop_callback]
+        callbacks=[best_checkpoint_saver, early_stop_callback]
         )
 
     trainer.fit(model=model, 
