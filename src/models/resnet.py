@@ -48,6 +48,10 @@ class Resnet(L.LightningModule):
         self.log("eval/f1", f1)
 
 
+    def test_step(self, batch, batch_idx):
+        return self.validation_step(batch, batch_idx)
+
+
     def configure_optimizers(self):
         parameters = [p for p in self.parameters() if p.requires_grad]
         optimizer = torch.optim.Adam(parameters, lr=1e-3)
