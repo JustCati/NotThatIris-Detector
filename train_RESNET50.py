@@ -21,8 +21,9 @@ def main(args):
     torch.set_float32_matmul_precision("high")
 
     images_path = os.path.join(dataset_path, "images")
-    test_csv_path = os.path.join(dataset_path, "test_iris.csv")
-    train_csv_path = os.path.join(dataset_path, "train_iris.csv")
+    work_path = os.path.join(dataset_path, "feature_extractor")
+    test_csv_path = os.path.join(work_path, "test_iris.csv")
+    train_csv_path = os.path.join(work_path, "train_iris.csv")
     complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
 
     if not os.path.exists(images_path):
