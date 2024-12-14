@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 
 
 class Resnet(L.LightningModule):
-    def __init__(self, batch_size=32, num_classes=1000):
+    def __init__(self, batch_size=32, num_classes=2000):
         super().__init__()
         self.batch_size = batch_size
         self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
