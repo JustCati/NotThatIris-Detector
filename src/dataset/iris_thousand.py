@@ -7,7 +7,8 @@ from torch.utils.data import Dataset
 
 
 class IrisThousand(Dataset):
-    def __init__(self, csv_file, dataset_path, original_csv_file, transform=None):
+    def __init__(self, csv_file, dataset_path, original_csv_file, transform=None, p=0.5):
+        self.p = p
         self.transform = transform
         self.gt = self.__process_df(csv_file, dataset_path)
         self.label_map = self.__create_label_map(original_csv_file)
@@ -37,7 +38,8 @@ class IrisThousand(Dataset):
 
         img = Image.open(img_path)
         if self.transform:
-            img = self.transform(img)
+            if torch.rand(1) < self.p:
+                img = self.transform(img)
 
         label = torch.tensor([label])
         img = transforms.ToTensor()(img)

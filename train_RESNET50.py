@@ -32,8 +32,13 @@ def main(args):
         out_path = normalize_iris_thousand(images_path, os.path.join(dataset_path, "iris_thousands.csv"))
         split_iris_thousand(out_path)
 
-    train_dataset = IrisThousand(train_csv_path, images_path, complete_csv_path)
-    eval_dataset = IrisThousand(test_csv_path, images_path, complete_csv_path)
+    transform = T.Compose([
+        T.GaussianBlur(kernel_size=3),
+        T.JPEG(quality=(50, 75)),
+    ])
+
+    train_dataset = IrisThousand(train_csv_path, images_path, complete_csv_path, transform=transform)
+    eval_dataset = IrisThousand(test_csv_path, images_path, complete_csv_path, transform=transform)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
