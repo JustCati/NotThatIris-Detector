@@ -1,6 +1,7 @@
 
 import os
 import cv2
+import random
 import pandas as pd
 from src.utils.eyes import normalize_eye
 
@@ -57,3 +58,61 @@ def split_iris_thousand(csv_path, train_ration=0.8):
 
     train_df.to_csv(csv_path.replace(os.path.basename(csv_path), "train_iris.csv"))
     test_df.to_csv(csv_path.replace(os.path.basename(csv_path), "test_iris.csv"))
+
+
+
+def split_iris_thousand_users(csv_path,
+                             known_user_ratio=0.8,
+                             unknown_user_ratio=0.1):
+    known_test_ratio = 0.1
+    known_train_ratio = 0.8
+    unknown_test_ratio = 0.5
+
+    random.seed(4242)
+    df = pd.read_csv(csv_path, index_col=0)
+    users = df["Label"].apply(lambda x: x.split("-")[0]).unique()
+
+    random.shuffle(users)
+    known_users = users[:int(len(users)*known_user_ratio)]
+    unknown_users = users[int(len(users)*known_user_ratio):int(len(users)*(known_user_ratio+unknown_user_ratio))]
+    negative_users = users[int(len(users)*(known_user_ratio+unknown_user_ratio)):]
+
+    unknown_users_test = unknown_users[:int(len(unknown_users)*unknown_test_ratio)]
+    unknown_users_val = unknown_users[int(len(unknown_users)*unknown_test_ratio):]
+
+    negativeDF = df[df["Label"].apply(lambda x: x.split("-")[0] in negative_users)]
+    negativeDF["Label"] = -1
+
+    unknown_testDF = df[df["Label"].apply(lambda x: x.split("-")[0] in unknown_users_test)]
+    unknown_valDF = df[df["Label"].apply(lambda x: x.split("-")[0] in unknown_users_val)]
+
+    knownDF = df[df["Label"].apply(lambda x: x.split("-")[0] in known_users)]
+    known_train = knownDF.sample(frac=known_train_ratio, random_state=4242)
+    knownDF = knownDF.drop(known_train.index)
+    known_test = knownDF.sample(frac=known_test_ratio, random_state=4242)
+    knownDF = knownDF.drop(known_test.index)
+    known_val = knownDF
+
+    assert set(unknown_testDF.Label.unique()).intersection(set(known_train.Label.unique())) == set()
+    assert set(unknown_testDF.Label.unique()).intersection(set(known_test.Label.unique())) == set()
+    assert set(unknown_testDF.Label.unique()).intersection(set(known_val.Label.unique())) == set()
+
+    assert set(unknown_testDF.Label.unique()).intersection(set(unknown_valDF.Label.unique())) == set()
+
+    assert set(negativeDF.Label.unique()).intersection(set(known_train.Label.unique())) == set()
+    assert set(negativeDF.Label.unique()).intersection(set(known_test.Label.unique())) == set()
+    assert set(negativeDF.Label.unique()).intersection(set(known_val.Label.unique())) == set()
+    assert set(negativeDF.Label.unique()).intersection(set(unknown_testDF.Label.unique())) == set()
+    assert set(negativeDF.Label.unique()).intersection(set(unknown_valDF.Label.unique())) == set()
+
+    train_df = pd.concat([known_train, negativeDF])
+    test_df = pd.concat([known_test, unknown_testDF])
+    val_df = pd.concat([known_val, unknown_valDF])
+
+    train_df.reset_index(drop=True, inplace=True)
+    test_df.reset_index(drop=True, inplace=True)
+    val_df.reset_index(drop=True, inplace=True)
+
+    train_df.to_csv(csv_path.replace(os.path.basename(csv_path), "train_users.csv"))
+    test_df.to_csv(csv_path.replace(os.path.basename(csv_path), "test_users.csv"))
+    val_df.to_csv(csv_path.replace(os.path.basename(csv_path), "val_users.csv"))
