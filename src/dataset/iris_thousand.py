@@ -18,6 +18,7 @@ class IrisThousand(Dataset):
     def __create_label_map(self, original_csv_file):
         df = pd.read_csv(original_csv_file, index_col=0)
         label_map = {label: i for i, label in enumerate(df["Label"].unique())}
+        label_map.update({"-1": -1})
         return label_map
 
 
