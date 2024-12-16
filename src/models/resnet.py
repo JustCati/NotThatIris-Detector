@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import f1_score
 
-import lightning as L
-from torchvision.models import resnet18, resnet50
-from torchvision.models.resnet import ResNet18_Weights, ResNet50_Weights
+import lightning as pl
+from torchvision.models import resnet50
+from torchvision.models.resnet import ResNet50_Weights
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -15,45 +15,7 @@ class Resnet(pl.LightningModule):
     def __init__(self, batch_size=32, num_classes=2000, verbose = False):
         super().__init__()
         self.batch_size = batch_size
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
         self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        else:
-            raise ValueError(f"Unknown model name: {name}")
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         if verbose:
             print(self.model)
@@ -96,23 +58,3 @@ class Resnet(pl.LightningModule):
         optimizer = torch.optim.Adam(parameters, lr=1e-3)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
         return [optimizer], [scheduler]
-
-
-
-class ClosedSetClassifier():
-    def __init__(self, backbone_checkpoint, batch_size=32, num_classes=2000):
-        self.backbone = Resnet(batch_size, num_classes)
-        self.backbone.load_from_checkpoint(backbone_checkpoint)
-        self.backbone.model.fc = nn.Identity()
-        self.backbone.eval()
-
-        self.classifier = nn.Sequential(
-            nn.Linear(self.backbone.model.fc.in_features, num_classes),
-            nn.Softmax(dim=1),
-            
-        )
-
-
-    def forward(self, x):
-        return super().forward(x)
-
