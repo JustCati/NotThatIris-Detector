@@ -47,7 +47,7 @@ def main(args):
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
 
-    model = Resnet(num_classes=train_dataset.num_classes, batch_size=args.batch_size)
+    model = Resnet(num_classes=train_dataset.num_classes, batch_size=args.batch_size, verbose=True)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
     tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="iris-thousand", version=csv_logger.version)
 
