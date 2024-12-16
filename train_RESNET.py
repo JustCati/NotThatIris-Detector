@@ -24,16 +24,18 @@ def main(args):
     torch.set_float32_matmul_precision("high")
 
     images_path = os.path.join(dataset_path, "images")
-    work_path = os.path.join(dataset_path, "feature_extractor")
-    test_csv_path = os.path.join(work_path, "test_iris.csv")
-    train_csv_path = os.path.join(work_path, "train_iris.csv")
+    test_csv_path = os.path.join(dataset_path, "test_iris.csv")
+    train_csv_path = os.path.join(dataset_path, "train_iris.csv")
     complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
 
     if not os.path.exists(images_path):
         raise FileNotFoundError(f"Images path not found: {images_path}")
     if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path):
-        out_path = normalize_iris_thousand(images_path, os.path.join(dataset_path, "iris_thousands.csv"))
-        split_iris_thousand(out_path)
+        if not os.path.exists(os.path.join(dataset_path, "normalized_iris.csv")):
+            out_path = normalize_iris_thousand(images_path, os.path.join(dataset_path, "iris_thousands.csv"))
+        else:
+            out_path = os.path.join(dataset_path, "normalized_iris.csv")
+            split_iris_thousand(out_path)
 
     transform = T.Compose([
         T.GaussianBlur(kernel_size=3),
