@@ -11,15 +11,27 @@ warnings.filterwarnings("ignore")
 
 
 
-class Resnet(L.LightningModule):
-    def __init__(self, name, batch_size=32, num_classes=2000):
+class Resnet(pl.LightningModule):
+    def __init__(self, batch_size=32, num_classes=2000):
         super().__init__()
         self.batch_size = batch_size
-
-        if name.lower() == "resnet18":
-            self.model = resnet18(ResNet18_Weights.IMAGENET1K_V1)
-        elif name.lower() == "resnet50":
             self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
+        else:
+            raise ValueError(f"Unknown model name: {name}")
+        else:
+            raise ValueError(f"Unknown model name: {name}")
+            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
+            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
+        else:
+            raise ValueError(f"Unknown model name: {name}")
+        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
+        else:
+            raise ValueError(f"Unknown model name: {name}")
+        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
+            self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
+        else:
+            raise ValueError(f"Unknown model name: {name}")
+        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
         else:
             raise ValueError(f"Unknown model name: {name}")
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
