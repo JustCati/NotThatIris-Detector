@@ -57,3 +57,24 @@ class VectorStore():
                                         label,
                                         label if isinstance(label, str) else str(label))
 
+
+
+class Matcher():
+    def __init__(self, model_path, collection_name, threshold, out_path="", device="cpu"):
+        self.threshold = threshold
+        self.vector_store = VectorStore(model_path, collection_name, out_path, device)
+
+
+    def match(self, img):
+        id, similarity = self.vector_store.query(img)
+        if similarity > self.threshold:
+            return id, similarity
+        return None, None
+
+
+    def add_user(self, imgs: list[str], label):
+        self.vector_store.add_user(imgs, label)
+
+
+    def change_threshold(self, threshold):
+        self.threshold = threshold
