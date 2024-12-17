@@ -257,3 +257,4 @@ test.ipynb
 
 *.pt
 *.pth
+.notebooks/*
