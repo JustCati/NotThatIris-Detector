@@ -58,3 +58,17 @@ class Resnet(pl.LightningModule):
         optimizer = torch.optim.Adam(parameters, lr=1e-3)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
         return [optimizer], [scheduler]
+
+
+
+class FeatureExtractor(pl.LightningModule):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model.model
+        self.model.fc = nn.Identity()
+        self.model.eval()
+
+
+    def forward(self, x):
+        with torch.no_grad():
+            return self.model(x)
