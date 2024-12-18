@@ -36,8 +36,27 @@ class VectorStore():
         return final_embedding.cpu().numpy()
 
 
+    def __fix_input(self, imgs, label=None, multiple_imgs=False):
+        if label is not None:
+            if isinstance(label, torch.Tensor):
+                label = label.item()
+            if not isinstance(label, str):
+                label = str(label)
+
+        if multiple_imgs:
+            if isinstance(imgs, Image.Image):
+                imgs = transforms.ToTensor()(imgs)
+            if not isinstance(imgs, torch.Tensor):
+                if isinstance(imgs, list) and  isinstance(imgs[0], Image.Image):
+                    imgs = [transforms.ToTensor()(img) for img in imgs]
+                if isinstance(imgs, list) and isinstance(imgs[0], torch.Tensor):
+                    imgs = torch.stack(imgs)
+            while len(imgs.shape) > 4 and imgs.shape[0] == 1:
+                imgs = imgs.squeeze(0)
+        return imgs if label is None else imgs, label
+
+
     def query(self, img):
-        img = Image.open(img)
         embedding = self.generate_embedding(img)
         toRet = self.vector_store.similarity_search_by_vector_with_relevance_scores(embedding, 1)
         id = toRet[0][0].page_content
@@ -46,21 +65,7 @@ class VectorStore():
 
 
     def add_user(self, imgs, label):
-        if isinstance(imgs, Image.Image):
-            imgs = transforms.ToTensor()(imgs)
-        if not isinstance(imgs, torch.Tensor):
-            if isinstance(imgs[0], Image.Image) and isinstance(imgs, list):
-                imgs = [transforms.ToTensor()(img) for img in imgs]
-            if isinstance(imgs[0], torch.Tensor) and isinstance(imgs, list):
-                imgs = torch.stack(imgs)
-
-        if len(imgs.shape) == 5 and imgs.shape[0] == 1:
-            imgs = imgs.squeeze(0)
-        if isinstance(label, torch.Tensor):
-            label = label.item()
-        if not isinstance(label, str):
-            label = str(label)
-
+        imgs, label = self.__fix_input(imgs=imgs, label=label, multiple_imgs=True)
         embedding = self.generate_embedding(imgs)
         self.vector_store.add_embedding(embedding, label, label)
 
