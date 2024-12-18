@@ -20,7 +20,7 @@ def main(args):
     images_path = os.path.join(dataset_path, "images")
     test_csv_path = os.path.join(dataset_path, "test_users.csv")
     train_csv_path = os.path.join(dataset_path, "train_users.csv")
-    eval_csv_path = os.path.join(dataset_path, "eval_users.csv")
+    eval_csv_path = os.path.join(dataset_path, "val_users.csv")
     complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
 
     if not os.path.exists(images_path):
