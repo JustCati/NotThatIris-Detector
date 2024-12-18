@@ -59,7 +59,7 @@ class VectorStore():
     def query(self, img):
         embedding = self.generate_embedding(img)
         toRet = self.vector_store.similarity_search_by_vector_with_relevance_scores(embedding, 1)
-        id = toRet[0][0].page_content
+        id = int(toRet[0][0].page_content)
         similarity = 1 - toRet[0][1]
         return id, similarity
 
