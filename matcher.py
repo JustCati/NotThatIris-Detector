@@ -34,10 +34,11 @@ def main(args):
 
 
     train_dataset = GenericIrisDataset(train_csv_path, images_path, complete_csv_path, modality="user")
-    eval_dataset = GenericIrisDataset(test_csv_path, images_path, complete_csv_path)
-    label_map = train_dataset.get_mapper()
+    test_dataset = GenericIrisDataset(test_csv_path, images_path, complete_csv_path)
+    eval_dataset = GenericIrisDataset(eval_csv_path, images_path, complete_csv_path)
 
     train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
     eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
 
     matcher = Matcher(model_path=model_path, 
