@@ -30,13 +30,8 @@ class VectorStore():
 
 
     def generate_embedding(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
-        imgs = [transforms.ToTensor()(img) for img in imgs if isinstance(img, Image.Image)]
-
         with torch.no_grad():
-            imgs = torch.stack(imgs).to(self.device)
-            embeddings = self.model(imgs)
+            embeddings = self.model(imgs.to(self.device))
         final_embedding = torch.mean(embeddings, dim=0)
         return final_embedding.cpu().numpy()
 
@@ -51,15 +46,29 @@ class VectorStore():
 
 
     def add_user(self, imgs, label):
-        self.vector_store.add_embedding(self.generate_embedding(imgs if isinstance(imgs, list) else [imgs]),
-                                        label,
-                                        label if isinstance(label, str) else str(label))
+        if isinstance(imgs, Image.Image):
+            imgs = transforms.ToTensor()(imgs)
+        if not isinstance(imgs, torch.Tensor):
+            if isinstance(imgs[0], Image.Image) and isinstance(imgs, list):
+                imgs = [transforms.ToTensor()(img) for img in imgs]
+            if isinstance(imgs[0], torch.Tensor) and isinstance(imgs, list):
+                imgs = torch.stack(imgs)
+
+        if len(imgs.shape) == 5 and imgs.shape[0] == 1:
+            imgs = imgs.squeeze(0)
+        if isinstance(label, torch.Tensor):
+            label = label.item()
+        if not isinstance(label, str):
+            label = str(label)
+
+        embedding = self.generate_embedding(imgs)
+        self.vector_store.add_embedding(embedding, label, label)
 
 
 
 class Matcher():
     def __init__(self, model_path, collection_name, threshold, out_path="", device="cpu"):
-        self.threshold = threshold
+        self.threshold = None if threshold == -1 else threshold
         self.vector_store = VectorStore(model_path, collection_name, out_path, device)
 
 
@@ -70,7 +79,7 @@ class Matcher():
         return None, None
 
 
-    def add_user(self, imgs: list[str], label):
+    def add_user(self, imgs: list, label):
         self.vector_store.add_user(imgs, label)
 
 
