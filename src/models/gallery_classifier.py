@@ -72,21 +72,31 @@ class VectorStore():
 
 
 class Matcher():
-    def __init__(self, model_path, collection_name, threshold, out_path="", device="cpu"):
-        self.threshold = None if threshold == -1 else threshold
+    def __init__(self, model_path, collection_name, threshold=None, out_path="", device="cpu"):
+        self.threshold = threshold
         self.vector_store = VectorStore(model_path, collection_name, out_path, device)
+
+
+    def match_train(self, img):
+        id, similarity = self.vector_store.query(img)
+        return id, similarity
 
 
     def match(self, img):
         id, similarity = self.vector_store.query(img)
         if similarity > self.threshold:
             return id, similarity
-        return None, None
+        else:
+            return None, similarity
+
+
+    def get_threshold(self):
+        return self.threshold
 
 
     def add_user(self, imgs: list, label):
         self.vector_store.add_user(imgs, label)
 
 
-    def change_threshold(self, threshold):
+    def set_threshold(self, threshold):
         self.threshold = threshold

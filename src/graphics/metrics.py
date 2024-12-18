@@ -15,9 +15,10 @@ def far_frr_graph(far, frr, threshold, eer_index):
     plt.plot(threshold, far, label="FAR", zorder=-1)
     plt.plot(threshold, frr, label="FRR", zorder=-1)
 
-    eer = far[eer_index]
-    plt.axvline(x=threshold[eer_index], color='red', linestyle='--', zorder=0)
-    plt.scatter(threshold[eer_index], eer, color="red", label="EER", zorder=1)
+    if eer_index is not None:
+        eer = far[eer_index]
+        plt.axvline(x=threshold[eer_index], color='red', linestyle='--', zorder=0)
+        plt.scatter(threshold[eer_index], eer, color="red", label="EER", zorder=1)
     plt.xlabel("Threshold")
     plt.ylabel("Rate")
     plt.legend()

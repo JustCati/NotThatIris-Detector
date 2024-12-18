@@ -5,8 +5,11 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 
 from src.models.gallery_classifier import Matcher
+from src.engine.thresholding import evaluate, get_eer
+from src.graphics.metrics import roc_graph, far_frr_graph
 from src.dataset.GenericIrisDataset import GenericIrisDataset
 from src.utils.dataset_utils.iris import normalize_iris_thousand, split_iris_thousand_users
+
 
 
 
@@ -43,15 +46,35 @@ def main(args):
 
     matcher = Matcher(model_path=model_path, 
                       collection_name=collection_name,
-                      threshold=-1,
                       out_path=persistent_outpath,
                       device=device)
 
+
     #* LOAD USERS INTO MATCHER
+    print("Loading users into matcher...")
     for imgs, labels in tqdm(train_dataloader):
         matcher.add_user(imgs, labels)
+    print()
 
-    
+
+    #* FINE TUNE THE THRESHOLD OF THE MATCHER
+    print("Fine tuning the threshold of the matcher...")
+    y, y_pred = evaluate(matcher, test_dataloader, train=True)
+    far, frr, tpr, threshold, eer_index, eer_threshold = get_eer(y, y_pred)
+    print()
+
+    roc_graph(far, tpr, y, y_pred)
+    far_frr_graph(far, frr, threshold, eer_index)
+
+
+    #* EVALUATE MATCHER
+    print("Evaluating the matcher...")
+    matcher.set_threshold(eer_threshold) #? Set the threshold to the EER threshold
+    y, y_pred = evaluate(matcher, eval_dataloader)
+    print()
+
+    far, frr, tpr, threshold, eer_index, eer = get_eer(y, y_pred)
+    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, EER: {eer:.4f}")
 
 
 
