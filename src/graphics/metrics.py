@@ -12,7 +12,6 @@ def roc_graph(fpr, tpr, y, y_pred):
 
 
 def far_frr_graph(far, frr, threshold, eer_index):
-    print(len(threshold))
     plt.plot(threshold, far, label="FAR", zorder=-1)
     plt.plot(threshold, frr, label="FRR", zorder=-1)
 
