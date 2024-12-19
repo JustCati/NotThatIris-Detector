@@ -25,7 +25,7 @@ class GalleryDB(Chroma):
 class VectorStore():
     def __init__(self, model_path, collection_name, out_path="", device="cpu"):
         self.device = device
-        self.model = FeatureExtractor(Resnet.load_from_checkpoint(model_path, num_classes=819)).to(device)
+        self.model = FeatureExtractor(model_path=model_path, num_classes=819).to(device)
         self.vector_store = GalleryDB(collection_name=collection_name, persist_directory=out_path)
 
 

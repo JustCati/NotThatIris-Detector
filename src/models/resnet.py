@@ -62,10 +62,16 @@ class Resnet(pl.LightningModule):
 
 
 class FeatureExtractor(pl.LightningModule):
-    def __init__(self, model):
+    def __init__(self, model=None, model_path=None, num_classes=819):
         super().__init__()
-        self.model = model.model
-        self.model.fc = nn.Identity()
+        if model is not None:
+            self.model = model
+        elif model_path is not None:
+            num_classes = num_classes if num_classes is not None else 819
+            self.model = Resnet.load_from_checkpoint(model_path, num_classes=num_classes)
+        else:
+            self.model = Resnet(num_classes=num_classes)
+        self.model.model.fc = nn.Identity()
         self.model.eval()
 
 
