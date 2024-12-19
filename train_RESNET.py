@@ -34,8 +34,8 @@ def main(args):
             out_path = normalize_iris_lamp(images_path)
         else:
             out_path = os.path.join(dataset_path, "normalized_iris.csv")
-            split_iris_lamp(out_path)
-            complete_csv_path = out_path
+        split_iris_lamp(out_path)
+        complete_csv_path = out_path
 
     transform = T.Compose([
         T.GaussianBlur(kernel_size=3),
