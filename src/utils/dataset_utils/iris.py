@@ -60,7 +60,6 @@ def normalize_iris_lamp(dataset_path):
                     cv2.imwrite(output, norm)
                     info = (id, output)
                     data.append(info)
-                    print(f"Processed successfully: {output}")
                 except Exception as e:
                     print(f"Error: {e}")
                     continue

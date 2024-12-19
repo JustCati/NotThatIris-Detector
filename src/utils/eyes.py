@@ -87,7 +87,7 @@ def normalize_eye(image, radius=40, find_iris=True):
     success = False
     if find_iris:
         image_roi, radius, success = iris_hough_detector(image, 40)
-    elif success or not find_iris:
+    if success or not find_iris:
         image_roi = image if not find_iris else image_roi
         image_roi = recflection_remove(image_roi)
         normalized = daugman_normalizaiton(image_roi, 60, 360, radius, 40)
