@@ -7,7 +7,7 @@ import multiprocessing
 from pqdm.threads import pqdm
 from torchvision.transforms import v2 as T
 
-from src.utils.eyes import iris_hough_detector
+from src.utils.eyes import iris_hough_detector, recflection_remove
 
 
 
@@ -116,10 +116,9 @@ def copy_image(idx, file, dst_path, scaling_factor):
         if (im.size[0] / scaling_factor) < 64 or (im.size[1] / scaling_factor) < 64:
             im = im.resize((64 * scaling_factor, 64 * scaling_factor), Image.BICUBIC)
 
-        try:
-            im.save(os.path.join(dst_path, os.path.basename(dst_file_path)))
-        except:
-            return
+        im = recflection_remove(im)
+        im = Image.fromarray(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
+        im.save(os.path.join(dst_path, os.path.basename(dst_file_path)))
 
 
 def create_dataset(src_path, dst_path, scaling_factor, train_split_ratio=0.8):

@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from PIL import Image
 
 
 
@@ -32,6 +33,8 @@ def daugman_normalizaiton(image, height, width, r_in, r_out):
 
 
 def recflection_remove(img):
+    if isinstance(img, Image.Image):
+        img = np.array(img)
     if len(img.shape) == 3:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     else:
