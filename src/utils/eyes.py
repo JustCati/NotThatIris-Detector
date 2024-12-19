@@ -32,7 +32,12 @@ def daugman_normalizaiton(image, height, width, r_in, r_out):
 
 
 def recflection_remove(img):
-    ret, mask = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY)
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = img
+
+    ret, mask = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
     kernel = np.ones((5, 5), np.uint8)
     dilation = cv2.dilate(mask, kernel, iterations=1)
     dst = cv2.inpaint(img, dilation, 5, cv2.INPAINT_TELEA)
