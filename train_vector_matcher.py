@@ -84,7 +84,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Matcher")
     parser.add_argument("--model_path", type=str, help="Path to the feature extraction model")
-    parser.add_argument("--graphs", action="store_true", help="Whether to plot the graphs")
+    parser.add_argument("--plot", action="store_true", help="Whether to plot the graphs")
     parser.add_argument("--collection_name", type=str, help="Name of the collection", default="Iris-Matcher")
     parser.add_argument("--out_path", type=str, help="Path to the output directory", default=os.path.join(os.path.dirname(__file__), "Iris-Matcher"))
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
