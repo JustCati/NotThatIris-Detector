@@ -64,7 +64,7 @@ def main(args):
     print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer_threshold:.4f}")
     print()
 
-    if args.graphs:
+    if args.plot:
         roc_graph(far, tpr, y, y_pred)
         far_frr_graph(far, frr, threshold, eer_index)
 
