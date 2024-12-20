@@ -75,7 +75,7 @@ def main(args):
     trainer = L.Trainer(
         default_root_dir=root_dir,   
         max_epochs=args.num_epochs,
-        accelerator="gpu",
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
         logger=[csv_logger, tb_logger],
         callbacks=[best_checkpoint_saver, early_stop_callback]
         )
