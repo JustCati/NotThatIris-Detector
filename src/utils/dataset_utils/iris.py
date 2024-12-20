@@ -90,7 +90,7 @@ def split_iris_lamp(csv_path, train_ration=0.8):
 
 
 def split_iris_thousand_users(csv_path,
-                             known_ratio=0.8):
+                              known_ratio=0.8):
     random.seed(4242)
     df = pd.read_csv(csv_path, index_col=0)
     users = df["Label"].apply(lambda x: x.split("-")[0]).unique()
@@ -101,9 +101,11 @@ def split_iris_thousand_users(csv_path,
 
     train_df = df[df["Label"].apply(lambda x: x.split("-")[0] in known_users)]
 
-    unknown_users_test = unknown_users[:int(len(unknown_users)*0.5)]
-    unknown_users_val = unknown_users[int(len(unknown_users)*0.5):]
+    unknown_users_train = unknown_users[:int(len(unknown_users)*0.6)]
+    unknown_users_test = unknown_users[int(len(unknown_users)*0.6):int(len(unknown_users)*0.8)]
+    unknown_users_val = unknown_users[int(len(unknown_users)*0.8):]
 
+    unknown_trainDF = df[df["Label"].apply(lambda x: x.split("-")[0] in unknown_users_train)]
     unknown_testDF = df[df["Label"].apply(lambda x: x.split("-")[0] in unknown_users_test)]
     unknown_valDF = df[df["Label"].apply(lambda x: x.split("-")[0] in unknown_users_val)]
 
@@ -119,8 +121,9 @@ def split_iris_thousand_users(csv_path,
 
     unknown_testDF["Label"] = -1
     unknown_valDF["Label"] = -1
+    unknown_trainDF["Label"] = -1
 
-    train_df = pd.concat([known_trainDF])
+    train_df = pd.concat([known_trainDF, unknown_trainDF])
     test_df = pd.concat([known_testDF, unknown_testDF])
     val_df = pd.concat([known_valDF, unknown_valDF])
 

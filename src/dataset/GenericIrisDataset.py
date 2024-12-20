@@ -13,17 +13,29 @@ class GenericIrisDataset(Dataset):
                  csv_file,
                  dataset_path,
                  original_csv_file,
+                 keep_uknown=False,
+                 keep_uknown=False,
                  upsample=False,
                  modality="sample",
                  transform=None,
                  p=0.5):
         self.p = p
         self.transform = transform
+        self.modality = modality == "sample"
+        self.use_upsampled = upsample
+        self.keep_uknown = keep_uknown
+
+        self.modality = modality == "sample"
+        self.use_upsampled = upsample
+        self.keep_uknown = keep_uknown
+
         self.gt = self.__process_df(csv_file, dataset_path)
         self.label_map = self.__create_label_map(original_csv_file)
         self.num_classes = len(self.label_map)
+
         self.modality = modality == "sample"
         self.use_upsampled = upsample
+
 
 
     def get_mapper(self):
@@ -45,6 +57,8 @@ class GenericIrisDataset(Dataset):
                 dataset_path
             )
         )
+        if not self.keep_uknown:
+            df = df.drop(df[df["Label"] == "-1"].index)
         return df
 
 

@@ -55,15 +55,24 @@ def main(args):
 
         sr_model = load_sr_model(sr_model_path, device=device)
         generate_upsampled_normalized_iris(sr_model, csv_normalized_path, low_res_path, device=device)
-        exit()
+
 
     train_dataset = GenericIrisDataset(train_csv_path, 
                                        images_path,
                                        complete_csv_path,
                                        modality="user",
+                                       keep_uknown=False,
                                        upsample=args.upsample)
-    test_dataset = GenericIrisDataset(test_csv_path, images_path, complete_csv_path, upsample=args.upsample)
-    eval_dataset = GenericIrisDataset(eval_csv_path, images_path, complete_csv_path, upsample=args.upsample)
+    test_dataset = GenericIrisDataset(test_csv_path,
+                                      images_path,
+                                      complete_csv_path,
+                                      keep_uknown=True,
+                                      upsample=args.upsample)
+    eval_dataset = GenericIrisDataset(eval_csv_path,
+                                      images_path,
+                                      complete_csv_path,
+                                      keep_uknown=True,
+                                      upsample=args.upsample)
 
     train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
