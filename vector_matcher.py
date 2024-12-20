@@ -61,8 +61,8 @@ def main(args):
                                        images_path,
                                        complete_csv_path,
                                        modality="user",
-                                       keep_uknown=False,
-                                       upsample=args.upsample)
+                                       keep_uknown=False)
+                                    #    upsample=args.upsample)
     test_dataset = GenericIrisDataset(test_csv_path,
                                       images_path,
                                       complete_csv_path,
@@ -98,10 +98,6 @@ def main(args):
     print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer_threshold:.4f}")
     print()
 
-    if args.plot:
-        roc_graph(far, tpr, y, y_pred)
-        far_frr_graph(far, frr, threshold, eer_index)
-
 
     #* EVALUATE MATCHER
     print("Evaluating the matcher...")
@@ -109,9 +105,14 @@ def main(args):
     y, y_pred = evaluate(matcher, eval_dataloader)
     print()
 
-    far, frr, _, _, _, _ = get_eer(y, y_pred)
-    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer_threshold:.4f}")
+    eval_far, eval_frr, _, _, _, _ = get_eer(y, y_pred)
+    print(f"FAR: {eval_far[eer_index]:.4f}, FRR: {eval_frr[eer_index]:.4f}, Threshold at EER: {eer_threshold:.4f}")
     print()
+
+
+    if args.plot:
+        roc_graph(far, tpr, y, y_pred)
+        far_frr_graph(far, frr, threshold, eer_index, eval_far, eval_frr)
 
 
 
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument("--plot", action="store_true", help="Whether to plot the graphs")
     parser.add_argument("--upsample", action="store_true", help="Whether to use Super Resolution on the images")
     parser.add_argument("--collection_name", type=str, help="Name of the collection", default="Iris-Matcher")
-    parser.add_argument("--out_path", type=str, help="Path to the output directory", default=os.path.join(os.path.dirname(__file__), "Iris-Matcher"))
+    parser.add_argument("--out_path", type=str, help="Path to the output directory", default=os.path.join(os.path.dirname(__file__), "Vector-Based-Matcher"))
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
     args = parser.parse_args()
     main(args)
