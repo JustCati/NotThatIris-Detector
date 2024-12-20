@@ -259,3 +259,4 @@ test.ipynb
 *.pth
 .notebooks/*
 Iris-Matcher/*
+Vector-Based-Matcher/*
