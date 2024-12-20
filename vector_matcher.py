@@ -61,8 +61,8 @@ def main(args):
                                        images_path,
                                        complete_csv_path,
                                        modality="user",
-                                       keep_uknown=False)
-                                    #    upsample=args.upsample)
+                                       keep_uknown=False,
+                                       upsample=args.upsample)
     test_dataset = GenericIrisDataset(test_csv_path,
                                       images_path,
                                       complete_csv_path,
