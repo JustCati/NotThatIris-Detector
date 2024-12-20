@@ -78,7 +78,7 @@ def iris_hough_detector(image_path, r = 40):
 
 
 
-def normalize_eye(image, radius=40, find_iris=True):
+def normalize_eye(image, radius_out=60, find_iris=True):
     if isinstance(image, str):
         image = cv2.imread(image) if isinstance(image, str) else cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     else:
@@ -90,7 +90,7 @@ def normalize_eye(image, radius=40, find_iris=True):
     if success or not find_iris:
         image_roi = image if not find_iris else image_roi
         image_roi = recflection_remove(image_roi)
-        normalized = daugman_normalizaiton(image_roi, 60, 360, radius, 40)
+        normalized = daugman_normalizaiton(image_roi, 60, 360, radius if success else radius_out, radius_out)
         return normalized
     else:
         raise ValueError("No iris found in the image.")
