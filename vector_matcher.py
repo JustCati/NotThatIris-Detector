@@ -109,8 +109,8 @@ def main(args):
     y, y_pred = evaluate(matcher, eval_dataloader)
     print()
 
-    far, frr, _, _, eer_index, eer = get_eer(y, y_pred)
-    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer:.4f}")
+    far, frr, _, _, _, _ = get_eer(y, y_pred)
+    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer_threshold:.4f}")
     print()
 
 
