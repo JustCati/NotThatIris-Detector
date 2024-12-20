@@ -1,6 +1,7 @@
 import os
 import torch 
 import argparse
+import multiprocessing
 from torch.utils.data import DataLoader
 
 import lightning as L
@@ -42,11 +43,12 @@ def main(args):
         T.JPEG(quality=(50, 75)),
     ])
 
+    cpu_count = multiprocessing.cpu_count() // 2
     train_dataset = GenericIrisDataset(train_csv_path, images_path, complete_csv_path, transform=transform)
     eval_dataset = GenericIrisDataset(test_csv_path, images_path, complete_csv_path, transform=transform)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=cpu_count)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
     model = Resnet(num_classes=train_dataset.num_classes, batch_size=args.batch_size, verbose=True)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
