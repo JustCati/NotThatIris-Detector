@@ -1,11 +1,10 @@
-import os
 import torch
 from PIL import Image
 from torchvision import transforms
+from torch.nn.functional import normalize
 
 from langchain_chroma import Chroma
-from src.models.resnet import Resnet, FeatureExtractor
-
+from src.models.resnet import FeatureExtractor
 
 
 
@@ -18,6 +17,7 @@ class GalleryDB(Chroma):
 
 
     def add_embedding(self, embedding, id, document):
+        # embedding = normalize(torch.from_numpy(embedding), dim=0).numpy()
         self._collection.upsert(embeddings=[embedding], ids=[id], documents=[document])
 
 
