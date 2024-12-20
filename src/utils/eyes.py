@@ -80,9 +80,8 @@ def iris_hough_detector(image_path, r = 40):
 
 def normalize_eye(image, radius_out=60, find_iris=True):
     if isinstance(image, str):
-        image = cv2.imread(image) if isinstance(image, str) else cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    else:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.imread(image)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     success = False
     if find_iris:
