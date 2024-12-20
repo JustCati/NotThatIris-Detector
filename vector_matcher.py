@@ -30,10 +30,10 @@ def main(args):
         raise FileNotFoundError(f"Images path not found: {images_path}")
     if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path) or not os.path.exists(eval_csv_path):
         if not os.path.exists(os.path.join(dataset_path, "normalized_iris.csv")):
-            out_path = normalize_iris_thousand(images_path, complete_csv_path)
+            csv_normalized_path = normalize_iris_thousand(images_path, complete_csv_path)
         else:
-            out_path = os.path.join(dataset_path, "normalized_iris.csv")
-        split_iris_thousand_users(out_path)
+            csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
+        split_iris_thousand_users(csv_normalized_path)
 
 
     train_dataset = GenericIrisDataset(train_csv_path, images_path, complete_csv_path, modality="user")
