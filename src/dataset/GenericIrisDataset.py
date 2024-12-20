@@ -1,4 +1,6 @@
+import os
 import torch
+import numpy as np
 import pandas as pd
 from PIL import Image
 from torchvision import transforms
@@ -7,13 +9,21 @@ from torch.utils.data import Dataset
 
 
 class GenericIrisDataset(Dataset):
-    def __init__(self, csv_file, dataset_path, original_csv_file, modality="sample", transform=None, p=0.5):
+    def __init__(self, 
+                 csv_file,
+                 dataset_path,
+                 original_csv_file,
+                 upsample=False,
+                 modality="sample",
+                 transform=None,
+                 p=0.5):
         self.p = p
         self.transform = transform
         self.gt = self.__process_df(csv_file, dataset_path)
         self.label_map = self.__create_label_map(original_csv_file)
         self.num_classes = len(self.label_map)
         self.modality = modality == "sample"
+        self.use_upsampled = upsample
 
 
     def get_mapper(self):
@@ -41,6 +51,9 @@ class GenericIrisDataset(Dataset):
     def __return_sample(self, idx):
             img_path = self.gt.loc[idx, "ImagePath"]
             label = self.label_map[self.gt.loc[idx, "Label"]]
+
+            if self.use_upsampled:
+                img_path = img_path.replace("normalized_iris", "upsampled_iris")
 
             img = Image.open(img_path)
             if self.transform:
