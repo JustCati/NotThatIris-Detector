@@ -20,7 +20,7 @@ from src.utils.dataset_utils.feature import extract_feature_from_normalized_iris
 def main(args):
     root_dir = args.output_path
     dataset_path = args.dataset_path
-    root_dir = os.path.join(root_dir, "FEAT_ADAPTER")
+    root_dir = os.path.join(root_dir, "ADAPTER")
 
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
@@ -74,18 +74,18 @@ def main(args):
         dirpath=os.path.join(root_dir, "models"),
         filename="best",
         save_top_k=1,
-        monitor="eval/triplet_accuracy",
-        mode="max",
+        monitor="eval/val_loss",
+        mode="min",
         verbose=True,
         save_last=True
         )
 
     early_stop_callback = EarlyStopping(
-        monitor="eval/triplet_accuracy",
-        min_delta=0.006,
-        patience=5,
+        monitor="eval/val_loss",
+        min_delta=0.004,
+        patience=6,
         verbose=False, 
-        mode="max"
+        mode="min"
         )
 
     trainer = L.Trainer(
