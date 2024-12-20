@@ -35,12 +35,6 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     images_path = os.path.join(dataset_path, "images")
-    if args.upsample and not os.path.exists(os.path.join(dataset_path, "upsampled_iris")):
-        low_res_path = os.path.join(dataset_path, "sr", "lq")
-        csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-    if args.upsample and not os.path.exists(os.path.join(dataset_path, "upsampled_iris")):
-        low_res_path = os.path.join(dataset_path, "sr", "lq")
-        csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
     test_csv_path = os.path.join(dataset_path, "test_users.csv")
     train_csv_path = os.path.join(dataset_path, "train_users.csv")
     eval_csv_path = os.path.join(dataset_path, "val_users.csv")
@@ -58,95 +52,24 @@ def main(args):
     if args.upsample and not os.path.exists(os.path.join(dataset_path, "upsampled_iris")):
         low_res_path = os.path.join(dataset_path, "sr", "lq")
         csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-        low_res_path = os.path.join(dataset_path, "sr", "lq")
-        csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-    test_csv_path = os.path.join(dataset_path, "test_users.csv")
-    train_csv_path = os.path.join(dataset_path, "train_users.csv")
-    eval_csv_path = os.path.join(dataset_path, "val_users.csv")
-    complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
-
-    if not os.path.exists(images_path):
-        raise FileNotFoundError(f"Images path not found: {images_path}")
-    if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path) or not os.path.exists(eval_csv_path):
-        if not os.path.exists(os.path.join(dataset_path, "normalized_iris.csv")):
-            csv_normalized_path = normalize_iris_thousand(images_path, complete_csv_path)
-        else:
-            csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-        split_iris_thousand_users(csv_normalized_path)
-
-    if args.upsample and not os.path.exists(os.path.join(dataset_path, "upsampled_iris")):
-        low_res_path = os.path.join(dataset_path, "sr", "lq")
-        csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-    train_csv_path = os.path.join(dataset_path, "train_users.csv")
-    eval_csv_path = os.path.join(dataset_path, "val_users.csv")
-    complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
-
-    if not os.path.exists(images_path):
-        raise FileNotFoundError(f"Images path not found: {images_path}")
-    if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path) or not os.path.exists(eval_csv_path):
-        if not os.path.exists(os.path.join(dataset_path, "normalized_iris.csv")):
-            csv_normalized_path = normalize_iris_thousand(images_path, complete_csv_path)
-        else:
-            csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-        split_iris_thousand_users(csv_normalized_path)
-        sr_model = load_sr_model(sr_model_path, device=device)
-        generate_upsampled_normalized_iris(sr_model, csv_normalized_path, low_res_path, device=device)
-        exit()
-
-    train_csv_path = os.path.join(dataset_path, "train_users.csv")
-    eval_csv_path = os.path.join(dataset_path, "val_users.csv")
-    complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
-
-    if not os.path.exists(images_path):
-        raise FileNotFoundError(f"Images path not found: {images_path}")
-    if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path) or not os.path.exists(eval_csv_path):
-        if not os.path.exists(os.path.join(dataset_path, "normalized_iris.csv")):
-            csv_normalized_path = normalize_iris_thousand(images_path, complete_csv_path)
-        else:
-            csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-        split_iris_thousand_users(csv_normalized_path)
-
-    if args.upsample and not os.path.exists(os.path.join(dataset_path, "upsampled_iris")):
-        low_res_path = os.path.join(dataset_path, "sr", "lq")
-        csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-    train_csv_path = os.path.join(dataset_path, "train_users.csv")
-    eval_csv_path = os.path.join(dataset_path, "val_users.csv")
-    complete_csv_path = os.path.join(dataset_path, "iris_thousands.csv")
-
-    if not os.path.exists(images_path):
-        raise FileNotFoundError(f"Images path not found: {images_path}")
-    if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path) or not os.path.exists(eval_csv_path):
-        if not os.path.exists(os.path.join(dataset_path, "normalized_iris.csv")):
-            csv_normalized_path = normalize_iris_thousand(images_path, complete_csv_path)
-        else:
-            csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-        split_iris_thousand_users(csv_normalized_path)
 
         sr_model = load_sr_model(sr_model_path, device=device)
         generate_upsampled_normalized_iris(sr_model, csv_normalized_path, low_res_path, device=device)
         exit()
 
-
-    if not os.path.exists(images_path):
-        raise FileNotFoundError(f"Images path not found: {images_path}")
-    if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path) or not os.path.exists(eval_csv_path):
-        if not os.path.exists(os.path.join(dataset_path, "normalized_iris.csv")):
-            csv_normalized_path = normalize_iris_thousand(images_path, complete_csv_path)
-        else:
-            csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-        split_iris_thousand_users(csv_normalized_path)
-
-
-        sr_model = load_sr_model(sr_model_path, device=device)
-    parser.add_argument("--feature_model_path", type=str, required=True, help="Path to the feature extraction model")
-    parser.add_argument("--sr_model_path", type=str, help="Path to the super resolution model")
-
+    train_dataset = GenericIrisDataset(train_csv_path, 
+                                       images_path,
+                                       complete_csv_path,
+                                       modality="user",
+                                       upsample=args.upsample)
+    test_dataset = GenericIrisDataset(test_csv_path, images_path, complete_csv_path, upsample=args.upsample)
+    eval_dataset = GenericIrisDataset(eval_csv_path, images_path, complete_csv_path, upsample=args.upsample)
 
     train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
     eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
 
-    matcher = Matcher(model_path=model_path, 
+    matcher = Matcher(model_path=feat_model_path, 
                       collection_name=collection_name,
                       out_path=persistent_outpath,
                       device=device)
@@ -187,97 +110,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Matcher")
     parser.add_argument("--feature_model_path", type=str, required=True, help="Path to the feature extraction model")
     parser.add_argument("--sr_model_path", type=str, help="Path to the super resolution model")
-
-    train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
-
-    matcher = Matcher(model_path=model_path, 
-                      collection_name=collection_name,
-                      out_path=persistent_outpath,
-                      device=device)
-
-
-    #* LOAD USERS INTO MATCHER
-    print("Loading users into matcher...")
-    for imgs, labels in tqdm(train_dataloader):
-        matcher.add_user(imgs, labels)
-    print()
-
-
-    #* FINE TUNE THE THRESHOLD OF THE MATCHER
-    print("Fine tuning the threshold of the matcher...")
-    y, y_pred = evaluate(matcher, test_dataloader, train=True)
-    far, frr, tpr, threshold, eer_index, eer_threshold = get_eer(y, y_pred)
-    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer_threshold:.4f}")
-    print()
-
-    if args.plot:
-        roc_graph(far, tpr, y, y_pred)
-        far_frr_graph(far, frr, threshold, eer_index)
-
-
-    #* EVALUATE MATCHER
-    print("Evaluating the matcher...")
-    matcher.set_threshold(eer_threshold) #? Set the threshold to the EER threshold
-    y, y_pred = evaluate(matcher, eval_dataloader)
-    print()
-
-    far, frr, _, _, eer_index, eer = get_eer(y, y_pred)
-    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer:.4f}")
-    print()
-
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Matcher")
-    parser.add_argument("--model_path", type=str, help="Path to the feature extraction model")
-    parser.add_argument("--upsample", action="store_true", help="Whether to use Super Resolution on the images")
-
-    train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
-
-    matcher = Matcher(model_path=model_path, 
-                      collection_name=collection_name,
-                      out_path=persistent_outpath,
-                      device=device)
-
-
-    #* LOAD USERS INTO MATCHER
-    print("Loading users into matcher...")
-    for imgs, labels in tqdm(train_dataloader):
-        matcher.add_user(imgs, labels)
-    print()
-
-
-    #* FINE TUNE THE THRESHOLD OF THE MATCHER
-    print("Fine tuning the threshold of the matcher...")
-    y, y_pred = evaluate(matcher, test_dataloader, train=True)
-    far, frr, tpr, threshold, eer_index, eer_threshold = get_eer(y, y_pred)
-    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer_threshold:.4f}")
-    print()
-
-    if args.plot:
-        roc_graph(far, tpr, y, y_pred)
-        far_frr_graph(far, frr, threshold, eer_index)
-
-
-    #* EVALUATE MATCHER
-    print("Evaluating the matcher...")
-    matcher.set_threshold(eer_threshold) #? Set the threshold to the EER threshold
-    y, y_pred = evaluate(matcher, eval_dataloader)
-    print()
-
-    far, frr, _, _, eer_index, eer = get_eer(y, y_pred)
-    print(f"FAR: {far[eer_index]:.4f}, FRR: {frr[eer_index]:.4f}, Threshold at EER: {eer:.4f}")
-    print()
-
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Matcher")
-    parser.add_argument("--model_path", type=str, help="Path to the feature extraction model")
     parser.add_argument("--plot", action="store_true", help="Whether to plot the graphs")
     parser.add_argument("--upsample", action="store_true", help="Whether to use Super Resolution on the images")
     parser.add_argument("--collection_name", type=str, help="Name of the collection", default="Iris-Matcher")
