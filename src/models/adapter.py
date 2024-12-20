@@ -19,7 +19,7 @@ class Adapter(pl.LightningModule):
         return self.Adapter(x)
 
 
-    def triplet_accuracy(anchor, positive, negative, epsilon=1e-6):
+    def triplet_accuracy(self, anchor, positive, negative, epsilon=1e-6):
         anchor = F.normalize(anchor, p=2, dim=1)
         positive = F.normalize(positive, p=2, dim=1)
         negative = F.normalize(negative, p=2, dim=1)
@@ -51,7 +51,7 @@ class Adapter(pl.LightningModule):
         loss = self.criterion(anchor, positive, negative)
         self.log("eval/val_loss", loss)
 
-        triplet_accuracy = triplet_accuracy(anchor, positive, negative)
+        triplet_accuracy = self.triplet_accuracy(anchor, positive, negative)
         self.log("eval/triplet_accuracy", triplet_accuracy)
 
 
