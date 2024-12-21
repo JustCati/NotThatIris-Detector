@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import lightning as pl
 import torch.nn.functional as F
-from collections import OrderedDict
 
 
 
@@ -55,3 +54,23 @@ class Adapter(pl.LightningModule):
         optimizer = torch.optim.Adam(parameters, lr=1e-5)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
         return [optimizer], [scheduler]
+
+
+
+
+class FeatureAdapter(pl.LightningModule):
+    def __init__(self, model=None, model_path=None, num_classes=2048):
+        super().__init__()
+        if model is not None:
+            self.model = model
+        elif model_path is not None:
+            num_classes = num_classes if num_classes is not None else 2048
+            self.model = Adapter.load_from_checkpoint(model_path, in_features=num_classes)
+        else:
+            self.model = Adapter(in_features=2048)
+        self.model.eval()
+
+
+    def forward(self, x):
+        with torch.no_grad():
+            return self.model(x)

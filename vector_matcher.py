@@ -4,11 +4,14 @@ import argparse
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
+from src.models.adapter import FeatureAdapter
+from src.models.resnet import FeatureExtractor
 from src.models.gallery_classifier import Matcher
 from external.DRCT.drct.archs.DRCT_arch import DRCT
 from src.engine.thresholding import evaluate, get_eer
 from src.graphics.metrics import roc_graph, far_frr_graph
 from src.dataset.GenericIrisDataset import GenericIrisDataset
+from src.models.GenericFeatureExtractor import GenericFeatureExtractor
 from src.utils.dataset_utils.upsample import generate_upsampled_normalized_iris
 from src.utils.dataset_utils.iris import normalize_iris_thousand, split_iris_thousand_users
 
@@ -28,7 +31,7 @@ def load_sr_model(model_path, device="cpu"):
 
 def main(args):
     sr_model_path = args.sr_model_path
-    feat_model_path = args.feature_model_path
+    resnet_model_path = args.resnet_model_path
     dataset_path = args.dataset_path
     persistent_outpath = args.out_path
     collection_name = args.collection_name
@@ -78,7 +81,15 @@ def main(args):
     test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
     eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
 
-    matcher = Matcher(model_path=feat_model_path, 
+    if args.adapter_model_path and os.path.exists(args.adapter_model_path):
+        adapter_model_path = args.adapter_model_path
+        adapter_model = FeatureAdapter(model_path=adapter_model_path, num_classes=2048)
+        resnet_model = FeatureExtractor(model_path=resnet_model_path, num_classes=819)
+        feat_extractor = GenericFeatureExtractor(modules=[resnet_model, adapter_model])
+    else:
+        feat_extractor = resnet_model_path
+
+    matcher = Matcher(model=feat_extractor, 
                       collection_name=collection_name,
                       out_path=persistent_outpath,
                       device=device)
@@ -118,7 +129,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Matcher")
-    parser.add_argument("--feature_model_path", type=str, required=True, help="Path to the feature extraction model")
+    parser.add_argument("--resnet_model_path", type=str, required=True, help="Path to the feature extraction model")
+    parser.add_argument("--adapter_model_path", type=str, default=None, help="Path to the adapter model")
     parser.add_argument("--sr_model_path", type=str, help="Path to the super resolution model")
     parser.add_argument("--plot", action="store_true", help="Whether to plot the graphs")
     parser.add_argument("--upsample", action="store_true", help="Whether to use Super Resolution on the images")
