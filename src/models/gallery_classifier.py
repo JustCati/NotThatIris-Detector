@@ -23,9 +23,12 @@ class GalleryDB(Chroma):
 
 
 class VectorStore():
-    def __init__(self, model_path, collection_name, out_path="", device="cpu"):
+    def __init__(self, model, collection_name, out_path="", device="cpu"):
         self.device = device
-        self.model = FeatureExtractor(model_path=model_path, num_classes=819).to(device)
+        if isinstance(model, str):
+            self.model = FeatureExtractor(model_path=model, num_classes=819).to(device)
+        else:
+            self.model = model
         self.vector_store = GalleryDB(collection_name=collection_name, persist_directory=out_path)
 
 
@@ -72,9 +75,9 @@ class VectorStore():
 
 
 class Matcher():
-    def __init__(self, model_path, collection_name, threshold=None, out_path="", device="cpu"):
+    def __init__(self, model, collection_name, threshold=None, out_path="", device="cpu"):
         self.threshold = threshold
-        self.vector_store = VectorStore(model_path, collection_name, out_path, device)
+        self.vector_store = VectorStore(model, collection_name, out_path, device)
 
 
     def match_train(self, img):
