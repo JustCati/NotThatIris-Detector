@@ -8,11 +8,11 @@ from collections import OrderedDict
 
 
 class Adapter(pl.LightningModule):
-    def __init__(self, in_features, out_features, margin=1, verbose=False):
+    def __init__(self, in_features, margin=1, verbose=False):
         super().__init__()
         self.margin = 1
         self.criterion = nn.TripletMarginWithDistanceLoss(distance_function=nn.CosineSimilarity(dim=1), margin=margin)
-        self.Adapter = nn.Linear(in_features, out_features)
+        self.Adapter = nn.Linear(in_features, in_features)
         if verbose:
             print(self.Adapter)
 
