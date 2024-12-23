@@ -13,6 +13,7 @@ class GenericIrisDataset(Dataset):
                  csv_file,
                  dataset_path,
                  original_csv_file,
+                 label_map=None,
                  keep_uknown=False,
                  upsample=False,
                  modality="sample",
@@ -25,9 +26,15 @@ class GenericIrisDataset(Dataset):
         self.keep_uknown = keep_uknown
 
         self.gt = self.__process_df(csv_file, dataset_path)
-        self.label_map = self.__create_label_map(original_csv_file)
+        if label_map is not None:
+            self.label_map = label_map
+        else:
+            self.label_map = self.__create_label_map(original_csv_file)
         self.num_classes = len(self.label_map)
 
+
+    def get_active_labels(self):
+        return sorted(self.gt["Label"].unique())
 
 
     def get_mapper(self):
@@ -49,6 +56,9 @@ class GenericIrisDataset(Dataset):
                 dataset_path
             )
         )
+        if "608-R" in df["Label"].unique():
+            df = df.drop(df[df["Label"] == "608-R"].index)
+            df = df.reset_index(drop=True)
         if self.use_upsampled:
             df["ImagePath"] = df["ImagePath"].apply(
                 lambda x: x.replace("normalized_iris", "upsampled_iris")
@@ -59,17 +69,17 @@ class GenericIrisDataset(Dataset):
 
 
     def __return_sample(self, idx):
-            img_path = self.gt.loc[idx, "ImagePath"]
-            label = self.label_map[self.gt.loc[idx, "Label"]]
+        img_path = self.gt.loc[idx, "ImagePath"]
+        label = self.label_map[self.gt.loc[idx, "Label"]]
 
-            img = Image.open(img_path)
-            if self.transform:
-                if torch.rand(1) < self.p:
-                    img = self.transform(img)
+        img = Image.open(img_path)
+        if self.transform:
+            if torch.rand(1) < self.p:
+                img = self.transform(img)
 
-            label = torch.tensor([label])
-            img = transforms.ToTensor()(img)
-            return img, label
+        label = torch.tensor([label])
+        img = transforms.ToTensor()(img)
+        return img, label
 
 
     def __return_user_imgs(self, idx):
