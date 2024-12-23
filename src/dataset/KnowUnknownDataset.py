@@ -24,6 +24,10 @@ class KnowUnknownDataset(Dataset):
         self.known_df, self.unknown_df = self.__process_df(csv_file, dataset_path)
 
 
+    def get_num_classes(self):
+        return len(self.known_df["Label"].unique())
+
+
     def __process_df(self, csv_file, dataset_path):
         df = pd.read_csv(csv_file, index_col=0)
         df["ImagePath"] = df["ImagePath"].apply(
@@ -64,7 +68,7 @@ class KnowUnknownDataset(Dataset):
         anchor_img = transforms.ToTensor()(anchor_img)
         positive_img = transforms.ToTensor()(positive_img)
         neg_img = transforms.ToTensor()(neg_img)
-        
+
         return anchor_img, positive_img, neg_img
 
 
@@ -87,8 +91,7 @@ class KnowUnknownDataset(Dataset):
             return self._get_features(idx)
         else:
             return self._get_imgs(idx)
-            
+
 
     def __len__(self):
         return len(self.known_df)
-
