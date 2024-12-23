@@ -47,15 +47,9 @@ def main(args):
         feat_model.to(device)
         extract_feature_from_normalized_iris(feat_model, os.path.join(dataset_path, "normalized_iris.csv"), device=device)
 
-    transform = T.Compose([
-        T.GaussianBlur(kernel_size=3),
-        T.JPEG(quality=(50, 75)),
-    ])
-
     train_dataset = KnowUnknownDataset(train_csv_path, 
                                        images_path,
-                                       features_only=True,
-                                       transform=transform)
+                                       features_only=True)
     test_dataset = KnowUnknownDataset(test_csv_path,
                                       images_path,
                                       features_only=True)
