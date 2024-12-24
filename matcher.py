@@ -17,6 +17,20 @@ from src.utils.dataset_utils.iris import normalize_iris_thousand, split_iris_tho
 
 
 
+def get_label_map(csv_file):
+    df = pd.read_csv(csv_file, index_col=0)
+    label_map = {label: i for i, label in enumerate(df["Label"].unique())}
+    label_map.update({"-1": -1})
+    return label_map
+
+
+def get_label_map(csv_file):
+    df = pd.read_csv(csv_file, index_col=0)
+    label_map = {label: i for i, label in enumerate(df["Label"].unique())}
+    label_map.update({"-1": -1})
+    return label_map
+
+
 def load_sr_model(model_path, device="cpu"):
     sr_model = DRCT(upscale=4, in_chans=3,  img_size= 64, window_size= 16, compress_ratio= 3,squeeze_factor= 30,
         conv_scale= 0.01, overlap_ratio= 0.5, img_range= 1., depths= [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
@@ -60,20 +74,25 @@ def main(args):
         generate_upsampled_normalized_iris(sr_model, csv_normalized_path, low_res_path, device=device)
 
 
+    #* ------------- LOAD DATASET -------------
+    label_map = get_label_map(train_csv_path)
     train_dataset = GenericIrisDataset(train_csv_path, 
                                        images_path,
                                        complete_csv_path,
+                                       label_map=label_map,
                                        modality="user",
                                        keep_uknown=False,
                                        upsample=args.upsample)
     test_dataset = GenericIrisDataset(test_csv_path,
                                       images_path,
                                       complete_csv_path,
+                                      label_map=label_map,
                                       keep_uknown=True,
                                       upsample=args.upsample)
     eval_dataset = GenericIrisDataset(eval_csv_path,
                                       images_path,
                                       complete_csv_path,
+                                      label_map=label_map,
                                       keep_uknown=True,
                                       upsample=args.upsample)
 
