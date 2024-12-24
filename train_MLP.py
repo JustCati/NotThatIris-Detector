@@ -30,7 +30,7 @@ def get_label_map(csv_file):
 def main(args):
     root_dir = args.output_path
     dataset_path = args.dataset_path
-    root_dir = os.path.join(root_dir, "ADAPTER")
+    root_dir = os.path.join(root_dir, "MLPMatcher")
 
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
