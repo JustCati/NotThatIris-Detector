@@ -14,6 +14,8 @@ warnings.filterwarnings("ignore")
 class Resnet(pl.LightningModule):
     def __init__(self, batch_size=32, num_classes=2000, verbose = False):
         super().__init__()
+        self.y = []
+        self.y_pred = []
         self.batch_size = batch_size
         self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
@@ -45,8 +47,16 @@ class Resnet(pl.LightningModule):
 
         y = y.cpu().numpy()
         y_hat = y_hat.argmax(dim=1).cpu().numpy()
-        f1 = f1_score(y, y_hat, average="macro")
+        self.y.extend(y)
+        self.y_pred.extend(y_hat)
+
+
+    def on_validation_epoch_end(self):
+        f1 = f1_score(self.y, self.y_pred, average="macro")
         self.log("eval/f1", f1)
+        
+        self.y = []
+        self.y_pred = []
 
 
     def test_step(self, batch, batch_idx):
