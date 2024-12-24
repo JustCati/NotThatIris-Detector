@@ -102,13 +102,16 @@ def main(args):
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=cpu_count)
     eval_dataloader = DataLoader(eval_dataset, batch_size=batch_size, shuffle=False, num_workers=cpu_count)
 
-    if args.adapter_model_path and os.path.exists(args.adapter_model_path):
-        adapter_model_path = args.adapter_model_path
-        adapter_model = FeatureAdapter(model_path=adapter_model_path, num_classes=2048)
-        resnet_model = FeatureExtractor(model_path=resnet_model_path, num_classes=819)
-        feat_extractor = GenericFeatureExtractor(modules=[resnet_model, adapter_model])
-    else:
-        feat_extractor = resnet_model_path
+
+    #* ------------- LOAD FEATURE EXTRACTOR -------------
+    feat_extractor = FeatureExtractor(model_path=resnet_model_path, num_classes=819).to(device)
+    if args.adapter_model_path:
+        if os.path.exists(args.adapter_model_path):
+            adapter_model_path = args.adapter_model_path
+            adapter_model = FeatureAdapter(model_path=adapter_model_path, num_classes=2048).to(device)
+            feat_extractor = GenericFeatureExtractor(modules=[feat_extractor, adapter_model]).to(device)
+        else:
+            print("Adapter model not found, using the feature extractor only...")
 
     matcher = Matcher(model=feat_extractor, 
                       collection_name=collection_name,
