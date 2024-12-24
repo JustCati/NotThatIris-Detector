@@ -61,11 +61,12 @@ class MLPMatcher(pl.LightningModule):
 
 
     def on_validation_epoch_end(self):
-        _, frr, _, _, eer_index, _ = get_eer(self.val_y, self.val_y_pred)
+        _, frr, _, _, eer_index, _ = get_eer(self._val_y, self._val_y_pred)
         self.log("eval/eer", frr[eer_index])
+        self.log("train/loss", self._loss_value)
 
-        self.val_y = []
-        self.val_y_pred = []
+        self._val_y = []
+        self._val_y_pred = []
 
 
     def configure_optimizers(self):
