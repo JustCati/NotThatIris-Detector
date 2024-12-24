@@ -22,6 +22,7 @@ def evaluate(matcher, test_dataloader, train=False):
 def get_eer(y, y_pred):
     far, tpr, threshold = roc_curve(y, y_pred, pos_label=1)
     frr = 1 - tpr
+    far = np.nan_to_num(far)
     frr = np.nan_to_num(frr)
     eer_index = np.nanargmin(np.absolute((frr - far)))
     eer_threshold = threshold[eer_index]
