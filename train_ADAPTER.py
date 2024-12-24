@@ -58,9 +58,9 @@ def main(args):
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=cpu_count)
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
-    VECTOR_DIM = 2048
+
     RESNET_OUT_DIM = 2048
-    model = Adapter(in_features=RESNET_OUT_DIM, out_features=VECTOR_DIM, verbose=True)
+    model = Adapter(in_features=RESNET_OUT_DIM, verbose=True)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
     tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="iris-thousand", version=csv_logger.version)
 
