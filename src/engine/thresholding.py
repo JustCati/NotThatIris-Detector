@@ -4,7 +4,7 @@ from sklearn.metrics import roc_curve
 
 
 
-def evaluate(matcher, test_dataloader, train=False):
+def evaluate_vectorbased(matcher, test_dataloader, train=False):
     y = []
     y_pred = []
     match_fun = matcher.match_train if train else matcher.match
