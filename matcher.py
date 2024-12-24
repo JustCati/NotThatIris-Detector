@@ -77,9 +77,11 @@ def main(args):
                                       keep_uknown=True,
                                       upsample=args.upsample)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
+    cpu_count = multiprocessing.cpu_count() // 2
+    batch_size = 1 if args.type == "vector" else 32
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=cpu_count)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=cpu_count)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=batch_size, shuffle=False, num_workers=cpu_count)
 
     if args.adapter_model_path and os.path.exists(args.adapter_model_path):
         adapter_model_path = args.adapter_model_path
