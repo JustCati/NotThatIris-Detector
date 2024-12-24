@@ -15,8 +15,8 @@ class Adapter(pl.LightningModule):
         self._losses = []
         self._loss_value = 1_000_000.0 # Just a high value
 
-        self.margin = 1
-        self.criterion = nn.TripletMarginWithDistanceLoss(distance_function=nn.CosineSimilarity(dim=1), margin=margin)
+        self.margin = margin
+        self.criterion = nn.TripletMarginLoss(margin=margin)
         self.Adapter = nn.Linear(in_features, in_features)
         if verbose:
             print(self.Adapter)
@@ -32,13 +32,8 @@ class Adapter(pl.LightningModule):
         negative = negative.to(self.device)
         anchor = self(x.to(self.device))
 
-        anchor = F.normalize(anchor, p=2, dim=1)
-        positive = F.normalize(positive, p=2, dim=1)
-        negative = F.normalize(negative, p=2, dim=1)
-
         loss = self.criterion(anchor, positive, negative)
         self._losses.append(loss.item())
-        # self.log("train/train_loss", loss)
         return loss
 
 
@@ -63,10 +58,6 @@ class Adapter(pl.LightningModule):
         anchor = torch.tensor(self._anchors)
         positive = torch.tensor(self._positives)
         negative = torch.tensor(self._negatives)
-
-        anchor = F.normalize(anchor, p=2, dim=1)
-        positive = F.normalize(positive, p=2, dim=1)
-        negative = F.normalize(negative, p=2, dim=1)
 
         loss = self.criterion(anchor, positive, negative)
         self.log("train/train_loss", self._loss_value)
