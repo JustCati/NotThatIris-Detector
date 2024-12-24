@@ -30,7 +30,8 @@ def evaluate_mlp(matcher, test_dataloader):
             label = label.cpu().numpy()
 
             y_hat = matcher(img.to(matcher.device))
-            y_hat = torch.softmax(y_hat, dim=1)
+            if y_hat.dtype is not torch.bool:
+                y_hat = torch.softmax(y_hat, dim=1)
             y_hat = y_hat.max(dim=1).values.cpu().numpy()
 
             y.extend(label)

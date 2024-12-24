@@ -29,6 +29,7 @@ class MLPMatcher(pl.LightningModule):
             x = self.extractor(x)
         x = self.Classifier(x)
         if self.threshold is not None:
+            x = torch.softmax(x, dim=1)
             x = x > self.threshold
         return x
 
