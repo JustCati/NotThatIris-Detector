@@ -30,7 +30,10 @@ def get_label_map(csv_file):
 def main(args):
     root_dir = args.output_path
     dataset_path = args.dataset_path
-    root_dir = os.path.join(root_dir, "MLPMatcher")
+    if args.adapter_model_path is not None:
+        root_dir = os.path.join(root_dir, "MLPMATCHER_ADAPTER")
+    else:
+        root_dir = os.path.join(root_dir, "MLPMATCHER")
 
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
@@ -85,14 +88,19 @@ def main(args):
 
 
     VECTOR_DIM = 2048
-    RESNET_OUT_DIM = 2048
     num_classes = len(train_dataset.get_active_labels())
-
     feat_model_path = args.feature_model_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    feat_model = FeatureExtractor(model_path=feat_model_path).to(device)
-    adapter = FeatureAdapter(model_path=args.adapter_model_path, num_classes=RESNET_OUT_DIM).to(device)
-    extractor = GenericFeatureExtractor([feat_model, adapter]).to(device)
+
+
+    extractor = FeatureExtractor(model_path=feat_model_path, num_classes=819).to(device)
+    if args.adapter_model_path:
+        if os.path.exists(args.adapter_model_path):
+            adapter_model_path = args.adapter_model_path
+            adapter_model = FeatureAdapter(model_path=adapter_model_path, num_classes=2048).to(device)
+            extractor = GenericFeatureExtractor(modules=[extractor, adapter_model]).to(device)
+        else:
+            print("Adapter model not found, using the feature extractor only...")
 
 
     model = MLPMatcher(in_feature=VECTOR_DIM, num_classes=num_classes, extractor=extractor, verbose=True).to(device)
