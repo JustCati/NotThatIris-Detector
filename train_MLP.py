@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
     parser.add_argument("--feature_model_path", type=str, required=True, help="Path to the feature extraction model")
-    parser.add_argument("--adapter_model_path", type=str, required=True, help="Path to the adapter model")
+    parser.add_argument("--adapter_model_path", type=str, required=False, help="Path to the adapter model")
     parser.add_argument("--output_path", type=str, default=os.path.join(os.path.dirname(__file__), "ckpts"))
     parser.add_argument("--upsample", action="store_true", default=False, help="Use upsampled dataset")
     parser.add_argument("--num_epochs", type=int, default=10)
