@@ -8,6 +8,8 @@ from src.engine.thresholding import get_eer
 class MLPMatcher(pl.LightningModule):
     def __init__(self, in_feature, num_classes, threshold=None, extractor=None, verbose=False):
         super().__init__()
+        self.val_y = []
+        self.val_y_pred = []
         self.threshold = threshold
         self.extractor = extractor
         self.Classifier = nn.Linear(in_feature, num_classes)
@@ -50,12 +52,20 @@ class MLPMatcher(pl.LightningModule):
         loss = nn.CrossEntropyLoss()(y_hat_for_loss, y_for_loss)
         self.log("eval/val_loss", loss)
 
+        y[mask] = 1
         y = y.cpu().numpy()
-        y_hat = y_hat.argmax(dim=1).cpu().numpy()
+        y_hat = y_hat.max(dim=1).values.cpu().numpy()
 
-        far, _, _, _, eer_index, _ = get_eer(y, y_hat)
-        eer = far[eer_index] 
-        self.log("eval/eer", eer)
+        self.val_y.extend(y)
+        self.val_y_pred.extend(y_hat)
+
+
+    def on_validation_epoch_end(self):
+        _, frr, _, _, eer_index, _ = get_eer(self.val_y, self.val_y_pred)
+        self.log("eval/eer", frr[eer_index])
+
+        self.val_y = []
+        self.val_y_pred = []
 
 
     def configure_optimizers(self):
