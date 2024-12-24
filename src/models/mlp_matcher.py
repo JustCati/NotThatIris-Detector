@@ -8,8 +8,11 @@ from src.engine.thresholding import get_eer
 class MLPMatcher(pl.LightningModule):
     def __init__(self, in_feature, num_classes, threshold=None, extractor=None, verbose=False):
         super().__init__()
-        self.val_y = []
-        self.val_y_pred = []
+        self._val_y = []
+        self._val_y_pred = []
+        self._losses = []
+        self._loss_value = 1_000_000.0 
+
         self.threshold = threshold
         self.extractor = extractor
         self.Classifier = nn.Linear(in_feature, num_classes)
@@ -36,8 +39,14 @@ class MLPMatcher(pl.LightningModule):
         y_hat = self(x.to(self.device))
 
         loss = nn.CrossEntropyLoss()(y_hat, y)
-        self.log("train/train_loss", loss)
+        self._losses.append(loss.item())
         return loss
+
+
+    def on_train_epoch_end(self):
+        mean_loss = torch.tensor(self._losses).mean()
+        self._loss_value = mean_loss
+        self._losses = []
 
 
     def validation_step(self, batch, batch_idx):
@@ -47,17 +56,13 @@ class MLPMatcher(pl.LightningModule):
         y_for_loss = y.view(-1).long()
         mask = y_for_loss != -1
         y_for_loss = y_for_loss[mask]
-        y_hat_for_loss = y_hat[mask]
-
-        loss = nn.CrossEntropyLoss()(y_hat_for_loss, y_for_loss)
-        self.log("eval/val_loss", loss)
 
         y[mask] = 1
         y = y.cpu().numpy()
         y_hat = y_hat.max(dim=1).values.cpu().numpy()
 
-        self.val_y.extend(y)
-        self.val_y_pred.extend(y_hat)
+        self._val_y.extend(y)
+        self._val_y_pred.extend(y_hat)
 
 
     def on_validation_epoch_end(self):
