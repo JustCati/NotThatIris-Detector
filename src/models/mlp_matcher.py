@@ -60,6 +60,7 @@ class MLPMatcher(pl.LightningModule):
 
         y[mask] = 1
         y = y.cpu().numpy()
+        y_hat = torch.softmax(y_hat, dim=1)
         y_hat = y_hat.max(dim=1).values.cpu().numpy()
 
         self._val_y.extend(y)
