@@ -9,9 +9,12 @@ import torch.nn.functional as F
 class Adapter(pl.LightningModule):
     def __init__(self, in_features, margin=1, verbose=False):
         super().__init__()
-        self.anchor = []
-        self.positive = []
-        self.negative = []
+        self._anchors = []
+        self._positives = []
+        self._negatives = []
+        self._losses = []
+        self._loss_value = 1_000_000.0 # Just a high value
+
         self.margin = 1
         self.criterion = nn.TripletMarginWithDistanceLoss(distance_function=nn.CosineSimilarity(dim=1), margin=margin)
         self.Adapter = nn.Linear(in_features, in_features)
@@ -34,8 +37,15 @@ class Adapter(pl.LightningModule):
         negative = F.normalize(negative, p=2, dim=1)
 
         loss = self.criterion(anchor, positive, negative)
-        self.log("train/train_loss", loss)
+        self._losses.append(loss.item())
+        # self.log("train/train_loss", loss)
         return loss
+
+
+    def on_train_epoch_end(self):
+        loss = torch.tensor(self._losses).mean()
+        self._loss_value = loss.item()
+        self._losses = []
 
 
     def validation_step(self, batch, batch_idx):
@@ -44,26 +54,27 @@ class Adapter(pl.LightningModule):
         negative = negative.to(self.device)
         anchor = self(x.to(self.device))
 
-        self.anchor.extend(anchor.cpu().numpy())
-        self.positive.extend(positive.cpu().numpy())
-        self.negative.extend(negative.cpu().numpy())
+        self._anchors.extend(anchor.cpu().numpy())
+        self._positives.extend(positive.cpu().numpy())
+        self._negatives.extend(negative.cpu().numpy())
 
 
     def on_validation_epoch_end(self):
-        anchor = torch.tensor(self.anchor)
-        positive = torch.tensor(self.positive)
-        negative = torch.tensor(self.negative)
+        anchor = torch.tensor(self._anchors)
+        positive = torch.tensor(self._positives)
+        negative = torch.tensor(self._negatives)
 
         anchor = F.normalize(anchor, p=2, dim=1)
         positive = F.normalize(positive, p=2, dim=1)
         negative = F.normalize(negative, p=2, dim=1)
 
         loss = self.criterion(anchor, positive, negative)
+        self.log("train/train_loss", self._loss_value)
         self.log("eval/val_loss", loss)
 
-        self.anchor = []
-        self.positive = []
-        self.negative = []
+        self._anchors = []
+        self._positives = []
+        self._negatives = []
 
 
     def test_step(self, batch, batch_idx):
