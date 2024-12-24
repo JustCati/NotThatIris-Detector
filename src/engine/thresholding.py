@@ -1,3 +1,4 @@
+import torch
 import numpy as np
 from tqdm import tqdm
 from sklearn.metrics import roc_curve
@@ -17,6 +18,27 @@ def evaluate_vectorbased(matcher, test_dataloader, train=False):
     y = np.array(y)
     y_pred = np.array(y_pred)
     return y, y_pred
+
+
+def evaluate_mlp(matcher, test_dataloader):
+    y = []
+    y_pred = []
+    with torch.no_grad():
+        for img, label in tqdm(test_dataloader):
+            mask = label != -1
+            label[mask] = 1
+            label = label.cpu().numpy()
+
+            y_hat = matcher(img.to(matcher.device))
+            y_hat = torch.softmax(y_hat, dim=1)
+            y_hat = y_hat.max(dim=1).values.cpu().numpy()
+
+            y.extend(label)
+            y_pred.extend(y_hat)
+    y = np.array(y)
+    y_pred = np.array(y_pred)
+    return y, y_pred
+
 
 
 def get_eer(y, y_pred):
