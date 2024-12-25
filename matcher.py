@@ -161,7 +161,6 @@ def main(args):
     print()
 
 
-    #! FIX THE PRINT OF FAR & FRR IN THE GRAPH
     if args.plot:
         roc_graph(far, tpr, y, y_pred)
         far_frr_graph(far, frr, threshold, eer_index, eval_far, eval_frr)
