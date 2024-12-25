@@ -6,6 +6,9 @@ from sklearn.metrics import RocCurveDisplay
 
 def roc_graph(fpr, tpr, y, y_pred):
     RocCurveDisplay(fpr=fpr, tpr=tpr).from_predictions(y, y_pred)
+    plt.title("ROC Curve")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
     plt.plot([0, 1], [0, 1], 'k--', label='Identity')
     plt.legend()
     plt.show()
