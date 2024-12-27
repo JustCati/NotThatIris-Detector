@@ -54,6 +54,11 @@ class Adapter(pl.LightningModule):
         self._negatives.extend(negative.cpu().numpy())
 
 
+    def _triplet_accuracy(self, anchor, positive, negative):
+        accuracy = (F.pairwise_distance(anchor, positive) < F.pairwise_distance(anchor, negative)).sum().item() / len(anchor)
+        return accuracy
+
+
     def on_validation_epoch_end(self):
         anchor = torch.tensor(self._anchors)
         positive = torch.tensor(self._positives)
@@ -62,6 +67,9 @@ class Adapter(pl.LightningModule):
         loss = self.criterion(anchor, positive, negative)
         self.log("train/train_loss", self._loss_value)
         self.log("eval/val_loss", loss)
+
+        accuracy = self._triplet_accuracy(anchor, positive, negative)
+        self.log("eval/accuracy", accuracy)
 
         self._anchors = []
         self._positives = []

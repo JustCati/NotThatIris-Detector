@@ -68,18 +68,18 @@ def main(args):
         dirpath=os.path.join(root_dir, "models"),
         filename="best",
         save_top_k=1,
-        monitor="eval/val_loss",
-        mode="min",
+        monitor="eval/accuracy",
+        mode="max",
         verbose=True,
         save_last=True
         )
 
     early_stop_callback = EarlyStopping(
-        monitor="eval/val_loss",
+        monitor="eval/accuracy",
         min_delta=0.004,
-        patience=6,
+        patience=10,
         verbose=False, 
-        mode="min"
+        mode="max"
         )
 
     trainer = L.Trainer(
