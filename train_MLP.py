@@ -30,10 +30,13 @@ def get_label_map(csv_file):
 def main(args):
     root_dir = args.output_path
     dataset_path = args.dataset_path
+
+    NAME = "MLPMATCHER"    
     if args.adapter_model_path is not None:
-        root_dir = os.path.join(root_dir, "MLPMATCHER_ADAPTER")
-    else:
-        root_dir = os.path.join(root_dir, "MLPMATCHER")
+        NAME +=  "_ADAPTER"
+    if args.upsample:
+        NAME += "_UPSAMPLE"
+    root_dir = os.path.join(root_dir, NAME)
 
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
@@ -120,7 +123,7 @@ def main(args):
     early_stop_callback = EarlyStopping(
         monitor="eval/eer",
         min_delta=0.004,
-        patience=6,
+        patience=10,
         verbose=False,
         mode="min"
         )
