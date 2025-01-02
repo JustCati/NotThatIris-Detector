@@ -90,8 +90,7 @@ Install Not That Iris! Detector using one of the following methods:
 
 
 ### 🤖 Usage
-Run Not That Iris! Detector using the following command:
-**Using `pip`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Pip-3776AB.svg?style={badge_style}&logo=pypi&logoColor=white" />](https://pypi.org/project/pip/)
+Run Not That Iris! Detector using the following commands:
 
 #### Train each modules
 ##### Train RESNET-50
