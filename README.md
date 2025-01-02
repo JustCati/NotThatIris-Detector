@@ -116,7 +116,7 @@ Run Not That Iris! Detector using the following command:
 
 ### Matcher
 ```sh
-❯ python train_RESNET.py ["vector", "mlp"] <path_to_resnet_checkpoint> --adapter_model_path <path_to_adapter_checkpoint> --mlp_model_path <path_to_mlp_checkpoint> --sr_model_path <path_to_sr_checkpoint> --dataset_path <folder_path> --out_path <path> --num_epochs <num>  --batch_size <num>
+❯ python train_RESNET.py ["vector", "mlp"] --feature_model_path <path_to_resnet_checkpoint> --adapter_model_path <path_to_adapter_checkpoint> --mlp_model_path <path_to_mlp_checkpoint> --sr_model_path <path_to_sr_checkpoint> --dataset_path <folder_path> --out_path <path> --num_epochs <num>  --batch_size <num>
 ```
 
 ---
