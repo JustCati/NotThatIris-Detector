@@ -120,7 +120,7 @@ def main(args):
     early_stop_callback = EarlyStopping(
         monitor="eval/acc+eer",
         min_delta=0.004,
-        patience=6,
+        patience=10,
         verbose=False,
         mode="max"
         )
