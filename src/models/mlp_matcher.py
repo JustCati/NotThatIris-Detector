@@ -80,6 +80,7 @@ class MLPMatcher(pl.LightningModule):
 
         self.log("eval/accuracy", accuracy)
         self.log("eval/eer", frr[eer_index])
+        self.log("eval/acc+eer", accuracy - frr[eer_index])
         self.log("train/loss", self._loss_value)
 
         self._val_y = []
