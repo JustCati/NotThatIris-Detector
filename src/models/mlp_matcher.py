@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import lightning as pl
 from src.engine.thresholding import get_eer
+from sklearn.metrics import accuracy_score
 
 
 
@@ -10,6 +11,8 @@ class MLPMatcher(pl.LightningModule):
         super().__init__()
         self._val_y = []
         self._val_y_pred = []
+        self._val_y_acc = []
+        self._val_y_pred_acc = []
         self._losses = []
         self._loss_value = 1_000_000.0 
 
@@ -55,21 +58,27 @@ class MLPMatcher(pl.LightningModule):
         x, y = batch
         y_hat = self(x.to(self.device))
 
-        y_for_loss = y.view(-1).long()
-        mask = y_for_loss != -1
-        y_for_loss = y_for_loss[mask]
+        y_for_acc = y.view(-1).long()
+        mask = y_for_acc != -1
+        y_for_acc = y_for_acc[mask]
 
         y[mask] = 1
         y = y.cpu().numpy()
         y_hat = torch.softmax(y_hat, dim=1)
-        y_hat = y_hat.max(dim=1).values.cpu().numpy()
+        y_hat_eer = y_hat.max(dim=1).values.cpu().numpy()
+        y_hat_acc = y_hat.argmax(dim=1).cpu().numpy()
 
         self._val_y.extend(y)
-        self._val_y_pred.extend(y_hat)
+        self._val_y_pred.extend(y_hat_eer)
+        self._val_y_acc.extend(y_for_acc.cpu().numpy())
+        self._val_y_pred_acc.extend(y_hat_acc[mask.cpu().numpy()])
 
 
     def on_validation_epoch_end(self):
         _, frr, _, _, eer_index, _ = get_eer(self._val_y, self._val_y_pred)
+        accuracy = accuracy_score(self._val_y_acc, self._val_y_pred_acc)
+
+        self.log("eval/accuracy", accuracy)
         self.log("eval/eer", frr[eer_index])
         self.log("train/loss", self._loss_value)
 
