@@ -90,6 +90,15 @@ Install Not That Iris! Detector using one of the following methods:
 
 
 ### 🤖 Usage
+
+#### Dataset
+Download "IrisCasiaV4-Thousand" and "IrisCasiaV4-Lamp" from the following [link](http://biometrics.idealtest.org/downloadDB.do?id=4&subset=5#/datasetDetail/4). Create a folder "data" and then create two folder: 
+
+- Iris-Thousand
+- Iris-Lamp
+
+Inside each of these there should be a folder "images" that contains all the folders of the users (e.g. "419-L", "419-R", etc...) and the csv with the name of the dataset.
+
 Run Not That Iris! Detector using the following commands:
 
 #### Train each modules
