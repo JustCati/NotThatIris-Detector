@@ -11,7 +11,6 @@ from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
 from src.models.mlp_matcher import MLPMatcher
-from src.models.adapter import FeatureAdapter
 from src.models.resnet import FeatureExtractor
 from src.dataset.GenericIrisDataset import GenericIrisDataset
 from src.models.GenericFeatureExtractor import GenericFeatureExtractor
@@ -30,10 +29,7 @@ def get_label_map(csv_file):
 def main(args):
     root_dir = args.output_path
     dataset_path = args.dataset_path
-    if args.adapter_model_path is not None:
-        root_dir = os.path.join(root_dir, "MLPMATCHER_ADAPTER")
-    else:
-        root_dir = os.path.join(root_dir, "MLPMATCHER")
+    root_dir = os.path.join(root_dir, "MLPMATCHER")
 
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
@@ -92,16 +88,7 @@ def main(args):
     feat_model_path = args.feature_model_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-
     extractor = FeatureExtractor(model_path=feat_model_path, num_classes=819).to(device)
-    if args.adapter_model_path:
-        if os.path.exists(args.adapter_model_path):
-            adapter_model_path = args.adapter_model_path
-            adapter_model = FeatureAdapter(model_path=adapter_model_path, num_classes=2048).to(device)
-            extractor = GenericFeatureExtractor(modules=[extractor, adapter_model]).to(device)
-        else:
-            print("Adapter model not found, using the feature extractor only...")
-
 
     model = MLPMatcher(in_feature=VECTOR_DIM, num_classes=num_classes, extractor=extractor, verbose=True).to(device)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
@@ -144,7 +131,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
     parser.add_argument("--feature_model_path", type=str, required=True, help="Path to the feature extraction model")
-    parser.add_argument("--adapter_model_path", type=str, required=False, help="Path to the adapter model")
     parser.add_argument("--output_path", type=str, default=os.path.join(os.path.dirname(__file__), "ckpts"))
     parser.add_argument("--upsample", action="store_true", default=False, help="Use upsampled dataset")
     parser.add_argument("--num_epochs", type=int, default=10)

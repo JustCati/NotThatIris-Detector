@@ -6,11 +6,9 @@ from tqdm import tqdm
 import multiprocessing
 from torch.utils.data import DataLoader
 
-from src.models.adapter import FeatureAdapter
 from src.models.resnet import FeatureExtractor
 from src.models.mlp_matcher import MLPMatcher
 from src.models.gallery_classifier import Matcher
-from external.DRCT.drct.archs.DRCT_arch import DRCT
 from src.graphics.metrics import roc_graph, far_frr_graph
 from src.dataset.GenericIrisDataset import GenericIrisDataset
 from src.models.GenericFeatureExtractor import GenericFeatureExtractor
@@ -26,16 +24,6 @@ def get_label_map(csv_file):
     label_map.update({"-1": -1})
     return label_map
 
-
-def load_sr_model(model_path, device="cpu"):
-    sr_model = DRCT(upscale=4, in_chans=3,  img_size= 64, window_size= 16, compress_ratio= 3,squeeze_factor= 30,
-        conv_scale= 0.01, overlap_ratio= 0.5, img_range= 1., depths= [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
-        embed_dim= 180, num_heads= [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6], gc= 32,
-        mlp_ratio= 2, upsampler= 'pixelshuffle', resi_connection= '1conv')
-    sr_model.load_state_dict(torch.load(model_path)['params'], strict=True)
-    sr_model.eval()
-    sr_model = sr_model.to(device)
-    return sr_model
 
 
 
@@ -63,13 +51,6 @@ def main(args):
         else:
             csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
         split_iris_thousand_users(csv_normalized_path)
-
-    if args.upsample and not os.path.exists(os.path.join(dataset_path, "upsampled_iris")):
-        low_res_path = os.path.join(dataset_path, "sr", "lq")
-        csv_normalized_path = os.path.join(dataset_path, "normalized_iris.csv")
-
-        sr_model = load_sr_model(sr_model_path, device=device)
-        generate_upsampled_normalized_iris(sr_model, csv_normalized_path, low_res_path, device=device)
 
 
     #* ------------- LOAD DATASET -------------
@@ -103,13 +84,6 @@ def main(args):
 
     #* ------------- LOAD FEATURE EXTRACTOR -------------
     feat_extractor = FeatureExtractor(model_path=resnet_model_path, num_classes=819).to(device)
-    if args.adapter_model_path:
-        if os.path.exists(args.adapter_model_path):
-            adapter_model_path = args.adapter_model_path
-            adapter_model = FeatureAdapter(model_path=adapter_model_path, num_classes=2048).to(device)
-            feat_extractor = GenericFeatureExtractor(modules=[feat_extractor, adapter_model]).to(device)
-        else:
-            print("Adapter model not found, using the feature extractor only...")
 
 
     #* ------------- LOAD MATCHER -------------
@@ -171,9 +145,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Matcher")
     parser.add_argument("type", type=str, help="Type of the matcher", choices=["vector", "mlp"])
     parser.add_argument("--resnet_model_path", type=str, required=True, help="Path to the feature extraction model")
-    parser.add_argument("--adapter_model_path", type=str, default=None, help="Path to the adapter model")
     parser.add_argument("--mlp_model_path", type=str, default=None, help="Path to the MLP model")
-    parser.add_argument("--sr_model_path", type=str, help="Path to the super resolution model")
     parser.add_argument("--plot", action="store_true", help="Whether to plot the graphs")
     parser.add_argument("--upsample", action="store_true", help="Whether to use Super Resolution on the images")
     parser.add_argument("--collection_name", type=str, help="Name of the collection", default="Iris-Matcher")
