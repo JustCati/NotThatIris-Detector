@@ -6,14 +6,12 @@ from tempfile import NamedTemporaryFile
 
 
 CLASSESS = {
-    "face" : 2,
     "left_eye" : 5,
     "right_eye" : 6
 }
 CONVERT_CLASS = {
-    2 : 0,
-    5 : 1,
-    6 : 1 # Both eyes are the same class, 2 to set as left eye
+    5 : 0,
+    6 : 0 # Both eyes are the same class
 }
 
 
@@ -51,7 +49,7 @@ def convert_ann_to_yolo(src_path, dst_path):
             img_h, img_w = mask.shape
 
             bboxes = []
-            for label in [CLASSESS["face"], CLASSESS["left_eye"], CLASSESS["right_eye"]]:
+            for label in [CLASSESS["left_eye"], CLASSESS["right_eye"]]:
                 positions = np.where(mask == label)
                 if positions[0].size > 0 and positions[1].size > 0:
                     # Get bounding box
