@@ -1,18 +1,22 @@
 import os
 import multiprocessing
-from ultralytics import YOLOv10
+from ultralytics import YOLO
 
 
 
-def getYOLO(checkpoint_path: str, device: str = 'cpu') -> YOLOv10:
+def getYOLO(checkpoint_path: str, device: str = 'cpu'):
+    download = False
     if not os.path.exists(checkpoint_path):
-        raise ValueError('Checkpoint path does not exist')
-    model = YOLOv10(checkpoint_path)
+        download = True
+    if download:
+        model = YOLO()
+    else:
+        model = YOLO(checkpoint_path)
     model.to(device)
     return model
 
 
-def train(model: YOLOv10, 
+def train(model: YOLO, 
           yaml_file: str,
           epochs: int,
           patience: int,

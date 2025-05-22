@@ -10,7 +10,6 @@ warnings.filterwarnings("ignore")
 
 
 def main(args):
-    #? Parse arguments and check if paths exist
     data_path = args.path
     if not os.path.exists(data_path):
         raise ValueError('Data path does not exist')
@@ -41,7 +40,9 @@ def main(args):
     dst_ann_count = sum([len(files) for _, _, files in os.walk(yolo_portrait_ann)])
     if "train.cache" in os.listdir(yolo_portrait_ann) and "test.cache" in os.listdir(yolo_portrait_ann):
         dst_ann_count -= 2
-    if src_ann_count != dst_ann_count:
+    print(f"Source annotations count: {src_ann_count}")
+    print(f"Destination annotations count: {dst_ann_count}")
+    if src_ann_count - 1 != dst_ann_count:
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann)
 
     #* Format yaml file
@@ -66,7 +67,7 @@ def main(args):
                 epochs=epochs,
                 patience=args.patience,
                 model_path=model_path if scratch else os.path.dirname(model_path),
-                folder_name=os.path.basename(model_path) if not scratch else "YOLOv10",
+                folder_name=os.path.basename(model_path) if not scratch else "YOLO",
                 resume=not scratch,
                 device=device)
 
