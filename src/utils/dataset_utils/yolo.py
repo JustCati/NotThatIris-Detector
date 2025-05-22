@@ -6,15 +6,6 @@ from tempfile import NamedTemporaryFile
 from concurrent.futures import ThreadPoolExecutor
 
 
-CLASSESS = {
-    "left_eye" : 5,
-    "right_eye" : 6
-}
-CONVERT_CLASS = {
-    5 : 0,
-    6 : 0 # Both eyes are the same class
-}
-
 
 def read_yaml(yaml_path, DATA_PATH, TRAIN_PATH, VAL_PATH):
     easy_portrai_yaml = None
@@ -38,7 +29,7 @@ def _process_file(args):
         img_h, img_w = mask.shape
 
         bboxes = []
-        for label_name in ["left_eye", "right_eye"]:
+        for label_name in CLASSESS.keys():
             label_val = CLASSESS[label_name]
             positions = np.where(mask == label_val)
             if positions[0].size > 0 and positions[1].size > 0:
@@ -69,7 +60,7 @@ def _process_file(args):
         return f"Error processing {path}: {e}"
 
 
-def convert_ann_to_yolo(src_path, dst_path):
+def convert_ann_to_yolo(src_path, dst_path, CLASSESS, CONVERT_CLASS):
     if not os.path.exists(dst_path):
         os.makedirs(dst_path)
 

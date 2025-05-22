@@ -9,6 +9,28 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+
+CLASSESS_EYE = {
+    "left_eye" : 5,
+    "right_eye" : 6
+}
+CONVERT_CLASS_EYE = {
+    5 : 0,
+    6 : 0 # Both eyes are the same class
+}
+
+CLASSESS_PUPILS = {
+    "Iris": 2,
+    "Pupil": 3
+}
+CONVERT_CLASS_PUPILS = {
+    2: 0,
+    3: 1
+}
+
+
+
+
 def main(args):
     data_path = args.path
     if not os.path.exists(data_path):
@@ -26,12 +48,12 @@ def main(args):
 
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
-    portrait_dataset_path = os.path.join(os.path.dirname(__file__), data_path, 'EasyPortrait')
+    portrait_dataset_path = os.path.join(os.path.dirname(__file__), data_path, args.dataset)
     portrait_train = os.path.join('images', "train")
     portrait_val = os.path.join('images', "test")
     portrait_ann = os.path.join(portrait_dataset_path, 'annotations')
     yolo_portrait_ann = os.path.join(portrait_dataset_path, 'labels')
-    easy_portrait_yaml_path = os.path.join(portrait_dataset_path, 'easy_portrait.yaml')
+    easy_portrait_yaml_path = os.path.join(portrait_dataset_path, f'{args.dataset}.yaml')
 
     if not os.path.exists(yolo_portrait_ann):
         os.makedirs(yolo_portrait_ann)
@@ -43,7 +65,9 @@ def main(args):
     print(f"Source annotations count: {src_ann_count}")
     print(f"Destination annotations count: {dst_ann_count}")
     if src_ann_count - 1 != dst_ann_count:
-        convert_ann_to_yolo(portrait_ann, yolo_portrait_ann)
+        CLASSESS = CLASSESS_EYE if args.dataset == 'EasyPortrait' else CLASSESS_PUPILS
+        CONVERT_CLASS = CONVERT_CLASS_EYE if args.dataset == 'EasyPortrait' else CONVERT_CLASS_PUPILS
+        convert_ann_to_yolo(portrait_ann, yolo_portrait_ann, CLASSESS, CONVERT_CLASS)
 
     #* Format yaml file
     if not os.path.exists(easy_portrait_yaml_path):
@@ -79,6 +103,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default='datasets', help='Path to data folder')
+    parser.add_argument('--dataset', type=str, default='EasyPortrait', help='Dataset name')
     parser.add_argument('--model_path', type=str, default='/', help='Path to model checkpoints folder')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs to train')
     parser.add_argument('--patience', type=int, default=0, help='Patience for early stopping')
