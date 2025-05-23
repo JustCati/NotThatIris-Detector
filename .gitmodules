@@ -7,3 +7,6 @@
 [submodule "external/iris_sam"]
 	path = external/iris_sam
 	url = git@github.com:ParisaFarmanifard/Iris-SAM.git
+[submodule "external/DnCNN"]
+	path = external/DnCNN
+	url = git@github.com:SaoYan/DnCNN-PyTorch.git
