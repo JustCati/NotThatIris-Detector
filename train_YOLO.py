@@ -49,8 +49,6 @@ def main(args):
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
     portrait_dataset_path = os.path.join(os.path.dirname(__file__), data_path, args.dataset)
-    portrait_train = os.path.join('images', "train")
-    portrait_val = os.path.join('images', "test")
     portrait_ann = os.path.join(portrait_dataset_path, 'annotations')
     yolo_portrait_ann = os.path.join(portrait_dataset_path, 'labels')
     easy_portrait_yaml_path = os.path.join(portrait_dataset_path, f'{args.dataset}.yaml')
