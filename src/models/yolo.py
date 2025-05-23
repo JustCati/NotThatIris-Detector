@@ -1,18 +1,26 @@
 import os
+import torch
+import subprocess
 import multiprocessing
 from ultralytics import YOLO
 
 
 
-def getYOLO(checkpoint_path: str, device: str = 'cpu'):
+def getYOLO(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
     download = False
     if not os.path.exists(checkpoint_path):
         download = True
     if download:
-        model = YOLO()
+        model_path = "yolov10m.pt" 
+        if not os.path.exists(model_path):
+            print("Downloading YOLOv10 model...")
+            subprocess.run(["wget", "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov10m.pt"])
+            print("Download complete.")
+        model = YOLO("yolov10m.pt", task='detect')
     else:
-        model = YOLO(checkpoint_path)
-    model.to(device)
+        model = YOLO(checkpoint_path, task='detect')
+    if not inference:
+        model.to(device)
     return model
 
 
