@@ -1,13 +1,12 @@
 import cv2
+import torch
 import numpy as np
-from PIL import Image
+from src.models.yolo import detect
 
 
 
-
-def daugman_normalizaiton(image, height, width, r_in, r_out):
+def daugman_normalization(image, height, width, r_in, r_out):
     thetas = np.arange(0, 2 * np.pi, 2 * np.pi / width)
-    r_out = r_in + r_out
 
     flat = np.zeros((height,width, 3), np.uint8)
     circle_x = int(image.shape[0] / 2)
@@ -32,22 +31,7 @@ def daugman_normalizaiton(image, height, width, r_in, r_out):
     return flat
 
 
-def recflection_remove(img):
-    if isinstance(img, Image.Image):
-        img = np.array(img)
-    if len(img.shape) == 3:
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = img
-
-    ret, mask = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
-    kernel = np.ones((5, 5), np.uint8)
-    dilation = cv2.dilate(mask, kernel, iterations=1)
-    dst = cv2.inpaint(img, dilation, 5, cv2.INPAINT_TELEA)
-    return dst
-
-
-def iris_hough_detector(image_path, r = 40):
+def hough_detector(image_path, padding_r=0):
     success = False
     image = cv2.imread(image_path) if isinstance(image_path, str) else cv2.cvtColor(image_path, cv2.COLOR_BGR2RGB)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -67,7 +51,7 @@ def iris_hough_detector(image_path, r = 40):
         circles = circles[0, :, :]
         circles = np.int16(np.array(circles))
         for i in circles[:]:
-            image = image[i[1] - i[2] - r:i[1] + i[2] + r, i[0] - i[2] -r:i[0] + i[2] + r]
+            image = image[i[1] - i[2] - padding_r:i[1] + i[2] + padding_r, i[0] - i[2] - padding_r:i[0] + i[2] + padding_r]
             radius = i[2]
         success = True
         return image, radius, success
@@ -78,18 +62,41 @@ def iris_hough_detector(image_path, r = 40):
 
 
 
-def normalize_eye(image, radius_out=60, find_iris=True):
+def find_pupil(image):
     if isinstance(image, str):
         image = cv2.imread(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    success = False
-    if find_iris:
-        image_roi, radius, success = iris_hough_detector(image, 40)
-    if success or not find_iris:
-        image_roi = image if not find_iris else image_roi
-        image_roi = recflection_remove(image_roi)
-        normalized = daugman_normalizaiton(image_roi, 60, 360, radius if success else radius_out, radius_out)
-        return normalized
-    else:
-        raise ValueError("No iris found in the image.")
+    image_roi, radius, success = hough_detector(image, -5)
+    return image_roi, radius, success
+
+
+
+def normalize_eye(image, model, output_size=(60, 360)):
+    results = detect(model, image, "cuda" if torch.cuda.is_available() else "cpu")
+    if len(results) == 0:
+        raise ValueError("No eye detected in the image.")
+    try:
+        box = results.boxes.xyxy.cpu().tolist()[0]
+    except:
+        print("No eye detected in the image. Returning a blank image.")
+        return np.zeros((output_size[0], output_size[1], 3), dtype=np.uint8)
+
+    image_crop = image.crop(
+        (
+            box[0],
+            box[1],
+            box[2],
+            box[3],
+        )
+    )
+    image_crop = np.array(image_crop)
+    image_r = image_crop.shape[0] // 2
+
+    _, pupil_r, success = find_pupil(image_crop)
+    if not success:
+        pupil_r = image_r // 2
+
+    normalized_eye = daugman_normalization(image_crop, output_size[0], output_size[1], pupil_r, image_r)
+    return normalized_eye
+
