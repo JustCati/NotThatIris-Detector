@@ -3,7 +3,7 @@ import argparse
 
 from src.utils.utils import get_device
 from src.models.yolo import getYOLO, train as yolo_train
-from src.utils.dataset_utils.yolo import convert_ann_to_yolo, read_yaml
+from src.utils.dataset_utils.yolo import convert_ann_to_yolo
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -72,7 +72,6 @@ def main(args):
     #* Format yaml file
     if not os.path.exists(easy_portrait_yaml_path):
         raise ValueError('Easy portrait yaml file does not exist')
-    easy_portrait_yaml = read_yaml(easy_portrait_yaml_path, portrait_dataset_path, portrait_train, portrait_val)
 
     #* Load YOLO model
     device = get_device()
@@ -86,7 +85,7 @@ def main(args):
     epochs = args.epochs
     batch_size = args.batch_size
     yolo_train(model=yolo_model, 
-                yaml_file=easy_portrait_yaml,
+                yaml_file=easy_portrait_yaml_path,
                 batch_size=batch_size,
                 epochs=epochs,
                 patience=args.patience,
