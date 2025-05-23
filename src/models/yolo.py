@@ -25,6 +25,16 @@ def getYOLO(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
     return model
 
 
+
+def detect(model, image, device: str = 'cpu'):
+    results = model.predict(image,
+                            conf = 0.4,
+                            device = device,
+                            verbose = False)
+    return results[0]
+
+
+
 def train(model: YOLO, 
           yaml_file: str,
           epochs: int,
@@ -44,6 +54,7 @@ def train(model: YOLO,
                           workers=cpu_workers,
                           save_period=5,
                           device=device,
+                          cls=1.0,
                           resume=resume,
                           val=True,
                           plots=True,
