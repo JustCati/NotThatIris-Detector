@@ -2,7 +2,6 @@ import os
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
-from tempfile import NamedTemporaryFile
 from concurrent.futures import ThreadPoolExecutor
 
 
