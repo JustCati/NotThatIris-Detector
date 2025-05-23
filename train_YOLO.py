@@ -20,12 +20,10 @@ CONVERT_CLASS_EYE = {
 }
 
 CLASSESS_PUPILS = {
-    "Iris": 2,
-    "Pupil": 3
+    "Iris": 3,
 }
 CONVERT_CLASS_PUPILS = {
-    2: 0,
-    3: 1
+    3: 0,
 }
 
 
@@ -62,7 +60,7 @@ def main(args):
         dst_ann_count -= 2
     print(f"Source annotations count: {src_ann_count}")
     print(f"Destination annotations count: {dst_ann_count}")
-    if src_ann_count - 1 != dst_ann_count:
+    if src_ann_count != dst_ann_count:
         CLASSESS = CLASSESS_EYE if args.dataset == 'EasyPortrait' else CLASSESS_PUPILS
         CONVERT_CLASS = CONVERT_CLASS_EYE if args.dataset == 'EasyPortrait' else CONVERT_CLASS_PUPILS
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann, CLASSESS, CONVERT_CLASS)
