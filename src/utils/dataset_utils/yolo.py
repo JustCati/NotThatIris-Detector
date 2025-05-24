@@ -4,6 +4,7 @@ from PIL import Image
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 
+from ultralytics.data.converter import convert_segment_masks_to_yolo_seg
 
 
 
@@ -64,3 +65,51 @@ def convert_ann_to_yolo(src_path, dst_path, CLASSESS, CONVERT_CLASS):
 
         with ThreadPoolExecutor(max_workers=16) as executor:
             results = list(tqdm(executor.map(_process_file, files_to_process), total=len(files_to_process)))
+
+
+
+
+
+
+
+def convert_ann_to_seg(ann_path, out_path, classes=3):
+    for folder in os.listdir(ann_path):
+        folder_path = os.path.join(ann_path, folder)
+        out_path = os.path.join(os.path.dirname(ann_path), "labels", folder)
+        os.makedirs(out_path, exist_ok=True)
+        convert_segment_masks_to_yolo_seg(folder_path, out_path, classes=3)
+
+    out_path = os.path.join(os.path.dirname(ann_path), "labels")
+
+    for folder in os.listdir(out_path):
+        folder_path = os.path.join(out_path, folder)
+        if not os.path.isdir(folder_path):
+            continue
+        for file in os.listdir(folder_path):
+            with open(os.path.join(folder_path, file), "r") as f:
+                lines = f.readlines()
+
+            classes = {
+                1: [],
+                2: [],
+            }
+            for line in lines:
+                line = line.strip().split()
+                class_id = int(line[0])
+                if class_id == 0:
+                    continue
+                points = list(map(float, line[1:]))
+                points = [(points[i], points[i + 1]) for i in range(0, len(points), 2)]
+                if len(classes[class_id]) < 1:
+                    classes[class_id].append(points)
+                if len(classes[class_id]) == 1:
+                    actual = len(classes[class_id][0])
+                    if actual < len(points):
+                        classes[class_id][0] = points
+            with open(os.path.join(folder_path, file), "w") as f:
+                for class_id, points in classes.items():
+                    class_id -= 1
+                    if len(points) > 0:
+                        points = points[0]
+                        points_str = " ".join(f"{x:.6f}" for point in points for x in point)
+                        f.write(f"{class_id} {points_str}\n")

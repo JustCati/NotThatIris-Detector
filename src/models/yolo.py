@@ -2,7 +2,7 @@ import os
 import torch
 import subprocess
 import multiprocessing
-from ultralytics import YOLOv10 as YOLO
+from ultralytics import YOLO
 
 
 
@@ -25,10 +25,29 @@ def getYOLO(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
     return model
 
 
+def getYOLOseg(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
+    download = False
+    if not os.path.exists(checkpoint_path):
+        download = True
+    if download:
+        link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m-seg.pt"
+        model_path = os.path.basename(link)
+        if not os.path.exists(model_path):
+            print("Downloading YOLO segmentation model...")
+            subprocess.run(["wget", link])
+            print("Download complete.")
+        model = YOLO(model_path, task='segment')
+    else:
+        model = YOLO(checkpoint_path, task='segment')
+    if not inference:
+        model.to(device)
+    return model
 
-def detect(model, image, device: str = 'cpu'):
+
+
+def detect(model, image, conf=0.5, device: str = 'cpu'):
     results = model.predict(image,
-                            conf = 0.4,
+                            conf = conf,
                             device = device,
                             verbose = False)
     return results[0]
@@ -54,7 +73,8 @@ def train(model: YOLO,
                           workers=cpu_workers,
                           save_period=5,
                           device=device,
-                          cls=1.0,
+                          cls=5.0,
+                          dropout=0.3,
                           resume=resume,
                           val=True,
                           plots=True,
