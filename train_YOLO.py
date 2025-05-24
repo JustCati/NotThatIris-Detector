@@ -10,22 +10,14 @@ warnings.filterwarnings("ignore")
 
 
 
-CLASSESS_EYE = {
+CLASSESS = {
     "left_eye" : 5,
     "right_eye" : 6
 }
-CONVERT_CLASS_EYE = {
+CONVERT_CLASS = {
     5 : 0,
     6 : 0 # Both eyes are the same class
 }
-
-CLASSESS_PUPILS = {
-    "Iris": 3,
-}
-CONVERT_CLASS_PUPILS = {
-    3: 0,
-}
-
 
 
 
@@ -54,15 +46,13 @@ def main(args):
     if not os.path.exists(yolo_portrait_ann):
         os.makedirs(yolo_portrait_ann)
 
-    src_ann_count = sum([len(files) for _, _, files in os.walk(portrait_ann)])
+    src_ann_count = sum([len(files) for _, _, files in os.walk(portrait_ann)]) - 1
     dst_ann_count = sum([len(files) for _, _, files in os.walk(yolo_portrait_ann)])
     if "train.cache" in os.listdir(yolo_portrait_ann) and "test.cache" in os.listdir(yolo_portrait_ann):
         dst_ann_count -= 2
     print(f"Source annotations count: {src_ann_count}")
     print(f"Destination annotations count: {dst_ann_count}")
     if src_ann_count != dst_ann_count:
-        CLASSESS = CLASSESS_EYE if args.dataset == 'EasyPortrait' else CLASSESS_PUPILS
-        CONVERT_CLASS = CONVERT_CLASS_EYE if args.dataset == 'EasyPortrait' else CONVERT_CLASS_PUPILS
         convert_ann_to_yolo(portrait_ann, yolo_portrait_ann, CLASSESS, CONVERT_CLASS)
 
     #* Format yaml file
@@ -89,9 +79,6 @@ def main(args):
                 folder_name=os.path.basename(model_path) if not scratch else "YOLO",
                 resume=not scratch,
                 device=device)
-
-
-
 
 
 
