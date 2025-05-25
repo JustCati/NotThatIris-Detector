@@ -25,6 +25,14 @@ def daugman_normalization(image, height, width, r_in, r_out):
             Xc = (1 - r_pro) * Xi + r_pro * Xo
             Yc = (1 - r_pro) * Yi + r_pro * Yo
 
+            if Xc >= image.shape[0]:
+                Xc = image.shape[0] - 1
+            if Yc >= image.shape[1]:
+                Yc = image.shape[1] - 1
+            if Xc < 0:
+                Xc = 0
+            if Yc < 0:
+                Yc = 0
             color = image[int(Xc)][int(Yc)]
 
             flat[j][i] = color

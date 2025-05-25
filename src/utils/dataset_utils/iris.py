@@ -1,35 +1,30 @@
 import os
 import cv2
 import pandas as pd
+from PIL import Image
 from src.utils.eyes import normalize_eye
 
 
 
-def normalize_iris_lamp(dataset_path):
-    data = []
+
+def normalize_iris_lamp(yolo_model, dataset_path):
     for root, _, files in os.walk(dataset_path):
         for file in files:
             if file.endswith(".jpg"):
-                id = root.split("/")[-2] + "-" + root.split("/")[-1]
                 input = os.path.join(root, file)
-                output = input.replace("images", "normalized_iris")
+                output = input.replace("images", "normalized")
 
                 if not os.path.exists(os.path.dirname(output)):
                     os.makedirs(os.path.dirname(output))
 
+                image = Image.open(input)
+                image = image.convert("RGB")
+                norm = normalize_eye(image, yolo_model)
                 try:
-                    norm = normalize_eye(input)
                     cv2.imwrite(output, norm)
-                    info = (id, output)
-                    data.append(info)
                 except Exception as e:
-                    print(f"Error: {e}")
+                    print(f"Error saving image {output}: {e}")
                     continue
-
-    df = pd.DataFrame(data, columns=["Label", "ImagePath"])
-    out_path = os.path.join(os.path.dirname(dataset_path), "normalized_iris.csv")
-    df.to_csv(out_path)
-    return out_path
 
 
 
