@@ -74,23 +74,35 @@ class DNCNN(pl.LightningModule):
 
 
     def on_validation_epoch_end(self):
-        y_loss = torch.tensor(self._y_loss)
-        y_hat_loss = torch.tensor(self._y_hat_loss)
+        if not self._y or not self._y_pred:
+            self.log("eval/val_loss", float('nan'), on_step=False, on_epoch=True, prog_bar=True)
+            self.log("eval/psnr", float('nan'), on_step=False, on_epoch=True, prog_bar=True)
+            self._y = []
+            self._y_pred = []
+            return
 
-        loss = self.criterion(y_loss, y_hat_loss) / (y_loss[0].size()[0]*2)
-        self.log("eval/val_loss", loss)
+        ground_truth_all_np = np.concatenate(self._y, axis=0)
+        predictions_all_np = np.concatenate(self._y_pred, axis=0)
+
+        gt_tensor = torch.from_numpy(ground_truth_all_np).to(self.device)
+        pred_tensor = torch.from_numpy(predictions_all_np).to(self.device)
+
+        sum_squared_errors = self.criterion(pred_tensor, gt_tensor)        
+        num_images = ground_truth_all_np.shape[0]
+        val_loss_epoch = sum_squared_errors / (num_images * 2)
+
+        self.log("eval/val_loss", val_loss_epoch)
         self.log("train/loss", self._loss_value)
 
-        psnr = cv2.PSNR(
-            y_loss.numpy().astype(np.uint8),
-            y_hat_loss.numpy().astype(np.uint8),
-        )
-        self.log("eval/psnr", psnr)
+        gt_for_psnr = ground_truth_all_np.astype(np.uint8)
+        pred_for_psnr = predictions_all_np.astype(np.uint8)
+
+        psnr_value = cv2.PSNR(gt_for_psnr, pred_for_psnr)
+        self.log("eval/psnr", psnr_value)
 
         self._y = []
         self._y_pred = []
-        self._y_loss = []
-        self._y_hat_loss = []
+
 
 
     def test_step(self, batch, batch_idx):
