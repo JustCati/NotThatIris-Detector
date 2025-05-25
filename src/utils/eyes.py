@@ -68,7 +68,7 @@ def normalize_eye(image, model, output_size=(60, 360)):
         score = result.boxes.conf.cpu().numpy()[0]
 
         if len(detections[1]) == 1:
-            actual_score = detections[1][0][2]
+            actual_score = detections[1][0][1]
             if score > actual_score:
                 detections[1][0] = (box, score)
         else:
