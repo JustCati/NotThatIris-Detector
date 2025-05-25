@@ -8,7 +8,7 @@ from src.utils.eyes import normalize_eye
 
 
 
-def normalize_iris_lamp(yolo_instance, dataset_path): 
+def normalize_dataset(yolo_instance, dataset_path): 
     all_image_full_paths = []
 
     for root_dir, _, file_names in os.walk(dataset_path):
