@@ -34,14 +34,15 @@ class NormalizedIrisDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = self.gt[idx]
+        img_y = Image.open(img_path).convert("RGB")
+        img_x = img_y.copy()
 
-        img = Image.open(img_path).convert("RGB")
         if self.transform:
-            img_x = self.transform(img)
+            img_x = self.transform(img_x.copy())
 
-        img = transforms.ToTensor()(img)
-        img_x = transforms.ToTensor()(img_x)
-        return img_x, img
+        img_x_tensor = transforms.ToTensor()(img_x)
+        img_y_tensor = transforms.ToTensor()(img_y)
+        return img_x_tensor, img_y_tensor
 
 
     def __len__(self):
