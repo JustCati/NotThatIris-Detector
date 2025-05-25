@@ -51,8 +51,8 @@ def main(args):
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
     model = DNCNN(verbose=True)
-    csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
-    tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="iris-thousand", version=csv_logger.version)
+    csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="dncnn")
+    tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="dncnn", version=csv_logger.version)
 
     best_checkpoint_saver = ModelCheckpoint(
         dirpath=os.path.join(root_dir, "models"),
