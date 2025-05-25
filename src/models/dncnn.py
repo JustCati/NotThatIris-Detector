@@ -84,7 +84,6 @@ class DNCNN(pl.LightningModule):
         psnr = cv2.PSNR(
             y_loss.numpy().astype(np.uint8),
             y_hat_loss.numpy().astype(np.uint8),
-            data_range=255.0
         )
         self.log("eval/psnr", psnr)
 
