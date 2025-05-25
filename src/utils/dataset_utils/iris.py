@@ -32,11 +32,11 @@ def normalize_iris_lamp(yolo_instance, dataset_path):
             norm = normalize_eye(image, yolo_instance)
             if norm is None:
                 print(f"Normalization failed for {input_image_path}, skipping.")
-                return
+                continue
             cv2.imwrite(output_image_path, norm)
         except Exception as e:
             print(f"Error saving image {output_image_path}: {e}")
-            return
+            continue
 
 
 def build_df(dataset_path):
