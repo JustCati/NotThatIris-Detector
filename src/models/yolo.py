@@ -8,7 +8,8 @@ from ultralytics import YOLO
 
 def getYOLO(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
     download = False
-    if not os.path.exists(checkpoint_path):
+    if not os.path.exists(checkpoint_path) or checkpoint_path == None:
+        print("Checkpoint path does not exist, downloading YOLO model...")
         download = True
     if download:
         link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov10s.pt"
@@ -20,14 +21,15 @@ def getYOLO(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
         model = YOLO(model_path, task='detect')
     else:
         model = YOLO(checkpoint_path, task='detect')
-    if not inference:
+    if inference:
         model.to(device)
     return model
 
 
 def getYOLOseg(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
     download = False
-    if not os.path.exists(checkpoint_path):
+    if not os.path.exists(checkpoint_path) or checkpoint_path == None:
+        print("Checkpoint path does not exist, downloading YOLO segmentation model...")
         download = True
     if download:
         link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m-seg.pt"
@@ -39,7 +41,7 @@ def getYOLOseg(checkpoint_path: str, device: str = 'cpu', inference: bool = Fals
         model = YOLO(model_path, task='segment')
     else:
         model = YOLO(checkpoint_path, task='segment')
-    if not inference:
+    if inference:
         model.to(device)
     return model
 
