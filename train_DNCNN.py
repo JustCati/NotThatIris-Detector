@@ -13,7 +13,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from src.models.dncnn import DNCNN
 from src.models.yolo import getYOLOseg
 from src.dataset.DenoiseDataset import NormalizedIrisDataset
-from src.utils.dataset_utils.iris import normalize_iris_lamp, split_by_sample
+from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
 
 
 
@@ -36,7 +36,7 @@ def main(args):
     if not os.path.exists(os.path.join(dataset_path, "normalized")):
         print("Normalizing iris images...")
         yolo_instance = getYOLOseg(args.yolo_path, device="cuda", inference=True)
-        normalize_iris_lamp(yolo_instance, dataset_path)
+        normalize_dataset(yolo_instance, dataset_path)
 
     transform = T.Compose([
         T.GaussianBlur(kernel_size=15, sigma=1.5),
