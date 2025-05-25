@@ -26,7 +26,6 @@ def main(args):
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
 
-    images_path = os.path.join(dataset_path, "normalized")
     test_csv_path = os.path.join(dataset_path, "test_iris.csv")
     train_csv_path = os.path.join(dataset_path, "train_iris.csv")
 
