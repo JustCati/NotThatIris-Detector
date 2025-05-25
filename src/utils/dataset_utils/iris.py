@@ -2,30 +2,41 @@ import os
 import cv2
 import pandas as pd
 from PIL import Image
+from tqdm import tqdm
 from src.utils.eyes import normalize_eye
 
 
 
 
-def normalize_iris_lamp(yolo_model, dataset_path):
-    for root, _, files in os.walk(dataset_path):
-        for file in files:
-            if file.endswith(".jpg"):
-                input = os.path.join(root, file)
-                output = input.replace("images", "normalized")
+def normalize_iris_lamp(yolo_instance, dataset_path): 
+    all_image_full_paths = []
 
-                if not os.path.exists(os.path.dirname(output)):
-                    os.makedirs(os.path.dirname(output))
+    for root_dir, _, file_names in os.walk(dataset_path):
+        for file_name in file_names:
+            if file_name.endswith(".jpg"):
+                all_image_full_paths.append(os.path.join(root_dir, file_name))
 
-                image = Image.open(input)
-                image = image.convert("RGB")
-                norm = normalize_eye(image, yolo_model)
-                try:
-                    cv2.imwrite(output, norm)
-                except Exception as e:
-                    print(f"Error saving image {output}: {e}")
-                    continue
+    if not all_image_full_paths:
+        print(f"No .jpg files found in {dataset_path}")
+        return
 
+    for input_image_path in tqdm(all_image_full_paths, desc="Normalizing images"):
+        output_image_path = input_image_path.replace("images", "normalized")
+
+        output_dir = os.path.dirname(output_image_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        image = Image.open(input_image_path).convert("RGB")
+        try:
+            norm = normalize_eye(image, yolo_instance)
+            if norm is None:
+                print(f"Normalization failed for {input_image_path}, skipping.")
+                return
+            cv2.imwrite(output_image_path, norm)
+        except Exception as e:
+            print(f"Error saving image {output_image_path}: {e}")
+            return
 
 
 def build_df(dataset_path):
