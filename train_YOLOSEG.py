@@ -1,12 +1,51 @@
 import os
 import argparse
 
+import torch
+from PIL import Image
+from tqdm import tqdm
+import torchvision.transforms as transforms
+from torchvision.transforms import v2 as T
+from concurrent.futures import ThreadPoolExecutor
+
 from src.utils.utils import get_device
 from src.models.yolo import getYOLO, train as yolo_train
 from src.utils.dataset_utils.yolo import convert_ann_to_seg
 
 import warnings
 warnings.filterwarnings("ignore")
+
+
+
+def process_file(in_path, out_path):
+    pipeline = T.Compose([
+        T.GaussianBlur(kernel_size=15, sigma=(1, 2)),
+        T.JPEG(quality=25),
+    ])
+    
+    img = Image.open(in_path)
+    try:
+        updated_img = pipeline(img)
+    except Exception as e:
+        print(f"Error processing {in_path}: {e}")
+        return
+
+    if not os.path.exists(os.path.dirname(out_path)):
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    updated_img.save(out_path)
+
+
+def augment_data(dataset_path, out_path):
+    files_to_process = []
+    for folder in os.listdir(dataset_path):
+        folder_path = os.path.join(dataset_path, folder)
+        for file in os.listdir(folder_path):
+            if file.endswith('.jpg') or file.endswith('.png'):
+                files_to_process.append((os.path.join(folder_path, file), os.path.join(out_path, folder, file)))
+
+    print(f"Found {len(files_to_process)} files to process in {dataset_path}")
+    with ThreadPoolExecutor() as executor:
+        list(tqdm(executor.map(lambda x: process_file(*x), files_to_process), total=len(files_to_process)))
 
 
 
@@ -28,24 +67,22 @@ def main(args):
 
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
-    portrait_dataset_path = os.path.join(os.path.dirname(__file__), data_path, "PupilsSegmentation")
-    ann = os.path.join(portrait_dataset_path, 'annotations')
-    yolo_ann = os.path.join(portrait_dataset_path, 'labels')
-    easy_portrait_yaml_path = os.path.join(portrait_dataset_path, f'PupilsSegmentation.yaml')
+    dataset_path = os.path.join(os.path.dirname(__file__), data_path, "PupilsSegmentation")
+    ann = os.path.join(dataset_path, 'annotations')
+    yolo_ann = os.path.join(dataset_path, 'labels')
+    easy_portrait_yaml_path = os.path.join(dataset_path, f'PupilsSegmentation.yaml')
 
     if not os.path.exists(yolo_ann):
         os.makedirs(yolo_ann)
 
-    src_ann_count = sum([len(files) for _, _, files in os.walk(ann)]) - 1
-    dst_ann_count = sum([len(files) for _, _, files in os.walk(yolo_ann)])
-    if "train.cache" in os.listdir(yolo_ann) and "test.cache" in os.listdir(yolo_ann):
-        dst_ann_count -= 2
-    print(f"Source annotations count: {src_ann_count}")
-    print(f"Destination annotations count: {dst_ann_count}")
-    if src_ann_count != dst_ann_count:
+    if not os.path.exists(yolo_ann):
         convert_ann_to_seg(ann_path=ann,
                            out_path=yolo_ann,
                            classes=3)
+
+    if not os.path.exists(os.path.join(dataset_path, 'images')):
+        augment_data(dataset_path=os.path.join(dataset_path, 'images_raw'),
+                      out_path=os.path.join(dataset_path, 'images'))
 
     #* Format yaml file
     if not os.path.exists(easy_portrait_yaml_path):
@@ -71,7 +108,7 @@ def main(args):
                 epochs=epochs,
                 patience=args.patience,
                 model_path=model_path if scratch else os.path.dirname(model_path),
-                folder_name=os.path.basename(model_path) if not scratch else "YOLO",
+                folder_name=os.path.basename(model_path) if not scratch else "YOLOSEG",
                 resume=not scratch,
                 device=device)
 
