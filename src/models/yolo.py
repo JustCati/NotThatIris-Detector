@@ -6,41 +6,27 @@ from ultralytics import YOLO
 
 
 
-def getYOLO(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
+def getYOLO(checkpoint_path: str, task: str, device: str = 'cpu', inference: bool = False):
     download = False
     if not os.path.exists(checkpoint_path) or checkpoint_path == None:
         print("Checkpoint path does not exist, downloading YOLO model...")
         download = True
     if download:
-        link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov10s.pt"
+        if task == 'segment':
+            link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m-seg.pt"
+        elif task == 'detection':
+            link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m.pt"
+        else:
+            raise ValueError("Task must be either 'segment' or 'detection'")
+        
         model_path = os.path.basename(link)
         if not os.path.exists(model_path):
             print("Downloading YOLO model...")
             subprocess.run(["wget", link])
             print("Download complete.")
-        model = YOLO(model_path, task='detect')
-    else:
-        model = YOLO(checkpoint_path, task='detect')
-    if inference:
-        model.to(device)
-    return model
+        checkpoint_path = model_path
 
-
-def getYOLOseg(checkpoint_path: str, device: str = 'cpu', inference: bool = False):
-    download = False
-    if not os.path.exists(checkpoint_path) or checkpoint_path == None:
-        print("Checkpoint path does not exist, downloading YOLO segmentation model...")
-        download = True
-    if download:
-        link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m-seg.pt"
-        model_path = os.path.basename(link)
-        if not os.path.exists(model_path):
-            print("Downloading YOLO segmentation model...")
-            subprocess.run(["wget", link])
-            print("Download complete.")
-        model = YOLO(model_path, task='segment')
-    else:
-        model = YOLO(checkpoint_path, task='segment')
+    model = YOLO(checkpoint_path, task=task)
     if inference:
         model.to(device)
     return model

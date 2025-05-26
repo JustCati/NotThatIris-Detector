@@ -2,7 +2,7 @@ import os
 import argparse
 
 from src.utils.utils import get_device
-from src.models.yolo import getYOLOseg, train as yolo_train
+from src.models.yolo import getYOLO, train as yolo_train
 from src.utils.dataset_utils.yolo import convert_ann_to_seg
 
 import warnings
@@ -56,9 +56,10 @@ def main(args):
     model_file = args.checkpoint if args.checkpoint != '' else 'last.pt'
     yolo_checkpoint_path = "" if scratch else os.path.join(model_path, "weights", model_file)
 
-    yolo_model = getYOLOseg(checkpoint_path=yolo_checkpoint_path,
-                            device=device,
-                            inference=False)
+    yolo_model = getYOLO(checkpoint_path=yolo_checkpoint_path,
+                         task='segment',
+                         device=device,
+                         inference=False)
     print("YOLO model loaded successfully")
 
     # #* Train YOLO model
