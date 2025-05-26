@@ -114,6 +114,7 @@ def augment_data(dataset_path, out_path):
 
 
 def create_iris_pupil_segmentation_mask(iris_mask,  pupil_params):
+    iris_mask[iris_mask == 255] = 1
     mask_pupil = np.zeros(iris_mask.shape, dtype=np.uint8)
 
     mask_pupil = cv2.circle(
@@ -123,9 +124,23 @@ def create_iris_pupil_segmentation_mask(iris_mask,  pupil_params):
         color=2,
         thickness=-1
     )
+    
+    ys, xs = np.where(iris_mask == 1)
+    if len(xs) == 0 or len(ys) == 0:
+        print("No iris pixels found in the mask.")
+        combined_mask = iris_mask.copy()
+        combined_mask[mask_pupil == 2] = 2
+        return combined_mask
+
+    x_min, x_max = xs.min(), xs.max()
+    y_min, y_max = ys.min(), ys.max()
+
+    mask_pupil[:y_min, :] = 0
+    mask_pupil[y_max+1:, :] = 0
+    mask_pupil[:, :x_min] = 0
+    mask_pupil[:, x_max+1:] = 0
 
     combined_mask = iris_mask.copy()
-    combined_mask[combined_mask == 255] = 1
     combined_mask[mask_pupil == 2] = 2
     return combined_mask
 
