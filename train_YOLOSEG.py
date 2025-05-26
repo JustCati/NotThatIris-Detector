@@ -1,51 +1,12 @@
 import os
 import argparse
 
-import torch
-from PIL import Image
-from tqdm import tqdm
-import torchvision.transforms as transforms
-from torchvision.transforms import v2 as T
-from concurrent.futures import ThreadPoolExecutor
-
 from src.utils.utils import get_device
 from src.models.yolo import getYOLO, train as yolo_train
-from src.utils.dataset_utils.yolo import convert_ann_to_seg
+from src.utils.dataset_utils.yolo import convert_ann_to_seg, generate_annotations, split_data, augment_data
 
 import warnings
 warnings.filterwarnings("ignore")
-
-
-
-def process_file(in_path, out_path):
-    pipeline = T.Compose([
-        T.GaussianBlur(kernel_size=15, sigma=(1, 2)),
-        T.JPEG(quality=25),
-    ])
-    
-    img = Image.open(in_path)
-    try:
-        updated_img = pipeline(img)
-    except Exception as e:
-        print(f"Error processing {in_path}: {e}")
-        return
-
-    if not os.path.exists(os.path.dirname(out_path)):
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    updated_img.save(out_path)
-
-
-def augment_data(dataset_path, out_path):
-    files_to_process = []
-    for folder in os.listdir(dataset_path):
-        folder_path = os.path.join(dataset_path, folder)
-        for file in os.listdir(folder_path):
-            if file.endswith('.jpg') or file.endswith('.png'):
-                files_to_process.append((os.path.join(folder_path, file), os.path.join(out_path, folder, file)))
-
-    print(f"Found {len(files_to_process)} files to process in {dataset_path}")
-    with ThreadPoolExecutor() as executor:
-        list(tqdm(executor.map(lambda x: process_file(*x), files_to_process), total=len(files_to_process)))
 
 
 
@@ -67,26 +28,28 @@ def main(args):
 
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
-    dataset_path = os.path.join(os.path.dirname(__file__), data_path, "PupilsSegmentation")
+    dataset_path = os.path.join(os.path.dirname(__file__), data_path, "Iris-Degradation")
     ann = os.path.join(dataset_path, 'annotations')
     yolo_ann = os.path.join(dataset_path, 'labels')
-    easy_portrait_yaml_path = os.path.join(dataset_path, f'PupilsSegmentation.yaml')
+    yaml_path = os.path.join(dataset_path, f'Iris-Degradation.yaml')
 
-    if not os.path.exists(yolo_ann):
-        os.makedirs(yolo_ann)
+    if not os.path.exists(ann):
+        if not os.path.exists(os.path.join(dataset_path, 'images_raw', "train")):
+            split_data(dataset_path=dataset_path)
+        generate_annotations(dataset_path=dataset_path)
 
     if not os.path.exists(yolo_ann):
         convert_ann_to_seg(ann_path=ann,
                            out_path=yolo_ann,
-                           classes=3)
+                           classes=2)
 
     if not os.path.exists(os.path.join(dataset_path, 'images')):
         augment_data(dataset_path=os.path.join(dataset_path, 'images_raw'),
                       out_path=os.path.join(dataset_path, 'images'))
 
     #* Format yaml file
-    if not os.path.exists(easy_portrait_yaml_path):
-        raise ValueError('Easy portrait yaml file does not exist')
+    if not os.path.exists(yaml_path):
+        raise ValueError('Yaml file does not exist')
 
     #* Load YOLO model
     device = get_device()
@@ -103,7 +66,7 @@ def main(args):
     epochs = args.epochs
     batch_size = args.batch_size
     yolo_train(model=yolo_model, 
-                yaml_file=easy_portrait_yaml_path,
+                yaml_file=yaml_path,
                 batch_size=batch_size,
                 epochs=epochs,
                 patience=args.patience,
