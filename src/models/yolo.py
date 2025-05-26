@@ -1,5 +1,4 @@
 import os
-import torch
 import subprocess
 import multiprocessing
 from ultralytics import YOLO
@@ -15,7 +14,7 @@ def getYOLO(checkpoint_path: str, task: str, device: str = 'cpu', inference: boo
         if task == 'segment':
             link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m-seg.pt"
         elif task == 'detection':
-            link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m.pt"
+            link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11s.pt"
         else:
             raise ValueError("Task must be either 'segment' or 'detection'")
         
