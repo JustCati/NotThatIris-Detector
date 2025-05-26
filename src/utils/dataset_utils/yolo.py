@@ -2,6 +2,7 @@ import os
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
+import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
 
 from ultralytics.data.converter import convert_segment_masks_to_yolo_seg
@@ -63,7 +64,7 @@ def convert_ann_to_yolo(src_path, dst_path, CLASSESS, CONVERT_CLASS):
         for path in os.listdir(folder_path):
             files_to_process.append((folder_path, dst_folder_path, path, CLASSESS, CONVERT_CLASS))
 
-        with ThreadPoolExecutor(max_workers=16) as executor:
+        with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
             results = list(tqdm(executor.map(_process_file, files_to_process), total=len(files_to_process)))
 
 
