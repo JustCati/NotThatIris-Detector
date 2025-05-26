@@ -8,7 +8,7 @@ from ultralytics import YOLO
 
 def getYOLO(checkpoint_path: str, task: str, device: str = 'cpu', inference: bool = False):
     download = False
-    if not os.path.exists(checkpoint_path) or checkpoint_path == None:
+    if checkpoint_path == None or not os.path.exists(checkpoint_path):
         print("Checkpoint path does not exist, downloading YOLO model...")
         download = True
     if download:
