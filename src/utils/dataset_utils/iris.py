@@ -1,5 +1,6 @@
 import os
 import cv2
+import numpy as np
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
@@ -8,7 +9,7 @@ from src.utils.eyes import normalize_eye, get_irismask
 
 
 
-def normalize_dataset(yolo_instance, dataset_path): 
+def normalize_dataset(yolo_instance, dataset_path, save_masks=False): 
     all_image_full_paths = []
 
     for root_dir, _, file_names in os.walk(dataset_path):
@@ -22,6 +23,9 @@ def normalize_dataset(yolo_instance, dataset_path):
 
     for input_image_path in tqdm(all_image_full_paths, desc="Normalizing images"):
         output_image_path = input_image_path.replace("images", "normalized")
+        if save_masks:
+            masks_output_path = input_image_path.replace("images", "masks")
+            os.makedirs(os.path.dirname(masks_output_path), exist_ok=True)
 
         output_dir = os.path.dirname(output_image_path)
         if not os.path.exists(output_dir):
@@ -35,6 +39,11 @@ def normalize_dataset(yolo_instance, dataset_path):
                 print(f"Normalization failed for {input_image_path}, skipping.")
                 continue
             cv2.imwrite(output_image_path, norm)
+            if save_masks:
+                mask = norm.copy()
+                mask = np.array(mask)
+                mask[mask > 0] = 1
+                cv2.imwrite(masks_output_path, mask)
         except Exception as e:
             print(f"Error saving image {output_image_path}: {e}")
             continue
