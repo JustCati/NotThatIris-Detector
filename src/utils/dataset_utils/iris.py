@@ -3,7 +3,7 @@ import cv2
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
-from src.utils.eyes import normalize_eye
+from src.utils.eyes import normalize_eye, get_irismask
 
 
 
@@ -29,7 +29,8 @@ def normalize_dataset(yolo_instance, dataset_path):
 
         image = Image.open(input_image_path).convert("RGB")
         try:
-            norm = normalize_eye(image, yolo_instance)
+            # norm = normalize_eye(image, yolo_instance)
+            norm = get_irismask(image, yolo_instance)
             if norm is None:
                 print(f"Normalization failed for {input_image_path}, skipping.")
                 continue
