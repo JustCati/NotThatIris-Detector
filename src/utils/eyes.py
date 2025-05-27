@@ -60,49 +60,52 @@ def containment_percentage(box_a, box_b):
 
 
 def normalize_eye(image, model, output_size=(60, 360)):
+    IRIS_IDX = 0
+    PUPIL_IDX = 1
+    
     detections = {
-        0: [], # Pupils
-        1: [], # Iris
+        IRIS_IDX: [], # Pupils
+        PUPIL_IDX: [], # Iris
     }
     results = detect(model, image)
 
     for result in results:
         class_id = int(result.boxes.cls.cpu().numpy()[0])
-        if class_id != 1:
+        if class_id != IRIS_IDX:
             continue
         box = result.boxes.xyxy[0].cpu().numpy()
         score = result.boxes.conf.cpu().numpy()[0]
 
-        if len(detections[1]) == 1:
-            actual_score = detections[1][0][1]
+        if len(detections[IRIS_IDX]) == 1:
+            actual_score = detections[IRIS_IDX][0][1]
             if score > actual_score:
-                detections[1][0] = (box, score)
+                detections[IRIS_IDX][0] = (box, score)
         else:
-            detections[1].append((box, score))
+            detections[IRIS_IDX].append((box, score))
             
 
     for result in results:
         class_id = int(result.boxes.cls.cpu().numpy()[0])
-        if class_id != 0:
+        if class_id != PUPIL_IDX:
             continue
         box = result.boxes.xyxy[0].cpu().numpy()
         score = result.boxes.conf.cpu().numpy()[0]
         
-        if len(detections[0]) == 1:
-            iris_box, _ = detections[1][0]
+        if len(detections[PUPIL_IDX]) == 1:
+            iris_box, _ = detections[IRIS_IDX][0]
             iou = containment_percentage(box, iris_box)
             if iou >= 0.8:
-                actual_score = detections[0][0][1]
+                actual_score = detections[PUPIL_IDX][0][1]
                 if score > actual_score:
-                    detections[0][0] = (box, score)
+                    detections[PUPIL_IDX][0] = (box, score)
         else:
-            iris_box, _ = detections[1][0]
+            iris_box, _ = detections[IRIS_IDX][0]
             iou = containment_percentage(box, iris_box)
             if iou >= 0.8:
-                detections[0].append((box, score))
+                detections[PUPIL_IDX].append((box, score))
 
-    iris_box = detections[1][0][0] if len(detections[1]) > 0 else None
-    pupil_box = detections[0][0][0] if len(detections[0]) > 0 else None
+    iris_box = detections[IRIS_IDX][0][0] if len(detections[IRIS_IDX]) > 0 else None
+    pupil_box = detections[PUPIL_IDX][0][0] if len(detections[PUPIL_IDX]) > 0 else None
     if iris_box is None or pupil_box is None:
         print("No iris or pupil detected")
         return None
