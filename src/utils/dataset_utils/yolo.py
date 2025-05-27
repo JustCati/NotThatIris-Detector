@@ -74,10 +74,27 @@ def convert_ann_to_yolo(src_path, dst_path, CLASSESS, CONVERT_CLASS):
 
 
 def convert_ann_to_seg(ann_path, out_path, classes=3):
+    def reduce(img_path):
+        img = Image.open(img_path)
+        img = np.array(img)
+        img[img == 255] = 1
+        img = Image.fromarray(img.astype(np.uint8))
+        img.save(img_path)
+    
     for folder in os.listdir(ann_path):
         folder_path = os.path.join(ann_path, folder)
         out_path = os.path.join(os.path.dirname(ann_path), "labels", folder)
         os.makedirs(out_path, exist_ok=True)
+
+        files_to_process = []
+        for file in os.listdir(folder_path):
+            if file.endswith('.png'):
+                files_to_process.append(os.path.join(folder_path, file))
+        
+        print("Normalizing values in masks...")
+        with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+            list(tqdm(executor.map(lambda x: reduce(x), files_to_process), total=len(files_to_process)))
+
         convert_segment_masks_to_yolo_seg(folder_path, out_path, classes=3)
 
 

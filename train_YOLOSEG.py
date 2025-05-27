@@ -29,19 +29,20 @@ def main(args):
     #* 1. TRAIN YOLO
     #* Convert annotations to YOLO format
     dataset_path = os.path.join(os.path.dirname(__file__), data_path, "Iris-Degradation")
-    ann = os.path.join(dataset_path, 'annotations')
+    ann = os.path.join(dataset_path, 'masks')
     yolo_ann = os.path.join(dataset_path, 'labels')
     yaml_path = os.path.join(dataset_path, f'Iris-Degradation.yaml')
 
-    if not os.path.exists(ann):
-        if not os.path.exists(os.path.join(dataset_path, 'images_raw', "train")):
-            split_data(dataset_path=dataset_path)
-        generate_annotations(dataset_path=dataset_path)
+    if not os.path.exists(os.path.join(ann, "train")):
+        split_data(dataset_path=dataset_path)
+
+    # if not os.path.exists(ann):
+    #     generate_annotations(dataset_path=dataset_path)
 
     if not os.path.exists(yolo_ann):
         convert_ann_to_seg(ann_path=ann,
                            out_path=yolo_ann,
-                           classes=2)
+                           classes=1)
 
     if not os.path.exists(os.path.join(dataset_path, 'images')):
         augment_data(dataset_path=os.path.join(dataset_path, 'images_raw'),
