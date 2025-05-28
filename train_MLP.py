@@ -13,9 +13,9 @@ from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from src.models.yolo import getYOLO
 from src.models.mlp_matcher import MLPMatcher
 from src.models.backbone import FeatureExtractor
-from src.utils.dataset_utils.iris import normalize_dataset
 from src.dataset.KnowUnknownDataset import KnowUnknownDataset
 from src.models.GenericFeatureExtractor import GenericFeatureExtractor
+from src.utils.dataset_utils.iris import normalize_dataset, split_by_user
 
 
 
@@ -57,8 +57,7 @@ def main(args):
                 inference=True
             )
             normalize_dataset((yolo_det, yolo_seg), dataset_path, distance=True)
-            exit()
-        split_iris_lamp(out_path)
+        split_by_user(dataset_path)
     complete_csv_path = os.path.join(dataset_path, "normalized_iris.csv")
 
     if not os.path.exists(os.path.join(dataset_path, "feature_iris")):
