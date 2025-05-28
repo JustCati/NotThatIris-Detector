@@ -43,7 +43,11 @@ class NormalizedIrisDataset(Dataset):
         img_x = img_y.copy()
 
         if self.transform:
-            img_x = self.transform(img_x.copy())
+            modified = self.transform(img_x)
+            modified = np.array(modified)
+            img_x = np.zeros_like(np.array(img_x))
+            img_x[modified != 0] = modified[modified != 0]
+            img_x = Image.fromarray(img_x)
 
         img_x_tensor = transforms.ToTensor()(img_x)
         img_y_tensor = transforms.ToTensor()(img_y)
