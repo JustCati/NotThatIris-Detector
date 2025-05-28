@@ -13,7 +13,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from src.models.yolo import getYOLO
 from src.models.mlp_matcher import MLPMatcher
 from src.models.backbone import FeatureExtractor
-from src.dataset.KnowUnknownDataset import KnowUnknownDataset
+from src.dataset.NormalizedDataset import NormalizedIrisDataset
 from src.models.GenericFeatureExtractor import GenericFeatureExtractor
 from src.utils.dataset_utils.iris import normalize_dataset, split_by_user
 
@@ -58,51 +58,46 @@ def main(args):
             )
             normalize_dataset((yolo_det, yolo_seg), dataset_path, distance=True)
         split_by_user(dataset_path)
-    complete_csv_path = os.path.join(dataset_path, "normalized_iris.csv")
-
-    if not os.path.exists(os.path.join(dataset_path, "feature_iris")):
-        feat_model_path = args.feature_model_path
-        feat_model = FeatureExtractor(model_path=feat_model_path)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-
-        feat_model.to(device)
-        extract_feature_from_normalized_iris(feat_model, os.path.join(dataset_path, "normalized_iris.csv"), device=device)
 
     transform = T.Compose([
         T.GaussianBlur(kernel_size=3),
         T.JPEG(quality=(50, 75)),
     ])
 
-    label_map = get_label_map(train_csv_path)
-    train_dataset = GenericIrisDataset(train_csv_path, 
-                                       images_path,
-                                       complete_csv_path,
-                                       label_map=label_map,
-                                       keep_uknown=False,
-                                       upsample=args.upsample,
-                                       transform=transform)
-    test_dataset = GenericIrisDataset(test_csv_path, 
-                                      images_path, 
-                                      complete_csv_path,
-                                      label_map=label_map,
-                                      keep_uknown=True,
-                                      upsample=args.upsample,
-                                      transform=transform)
+
+    train_df = pd.read_csv(train_csv_path, index_col=0)
+    test_df = pd.read_csv(test_csv_path, index_col=0)
+    train_df = train_df[train_df["Label"] != -1]
+    test_df = test_df[test_df["Label"] != -1]
+    train_users = train_df["Label"].unique()
+    test_users = test_df["Label"].unique()
+    all_users = list(set(train_users) | set(test_users))
+    
+    train_dataset = NormalizedIrisDataset(
+        csv_file=train_csv_path,
+        transform=transform,
+        classes=all_users
+    )
+    test_dataset = NormalizedIrisDataset(
+        csv_file=test_csv_path,
+        transform=transform,
+        classes=all_users,
+        keep_unknown=True
+    )
 
     cpu_count = multiprocessing.cpu_count() // 2
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=cpu_count)
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
     num_classes = len(train_dataset.get_active_labels())
-    feat_model_path = args.feature_model_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    extractor = FeatureExtractor(model_path=feat_model_path).to(device)
-
-    vector_dim = extractor.get_vector_dim()
-    model = MLPMatcher(in_feature=vector_dim, num_classes=num_classes, extractor=extractor, verbose=True).to(device)
-    csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="iris-thousand")
-    tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="iris-thousand", version=csv_logger.version)
+    backbone = FeatureExtractor(model_path=args.backbone_path).to(device)
+    vector_dim = backbone.get_vector_dim()
+    
+    model = MLPMatcher(in_feature=vector_dim, num_classes=num_classes, extractor=backbone, verbose=True).to(device)
+    csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="mlp")
+    tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="mlp", version=csv_logger.version)
 
     best_checkpoint_saver = ModelCheckpoint(
         dirpath=os.path.join(root_dir, "models"),
