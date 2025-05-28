@@ -13,9 +13,11 @@ class NormalizedIrisDataset(Dataset):
                  csv_file,
                  classes,
                  transform=None,
-                 p=0.5):
+                 p=0.5,
+                 keep_unknown=False):
         self.p = p
         self.transform = transform
+        self.keep_unknown = keep_unknown
 
         self.gt = self.__process_df(csv_file)
         self.__sanitize()
@@ -31,7 +33,8 @@ class NormalizedIrisDataset(Dataset):
                 toRemove.append(i)
         self.gt = self.gt.drop(toRemove)
         self.gt = self.gt.reset_index(drop=True)
-        self.gt = self.gt.drop(self.gt[self.gt["Label"] == -1].index)
+        if not self.keep_unknown:
+            self.gt = self.gt.drop(self.gt[self.gt["Label"] == -1].index)
 
 
     def get_active_labels(self):
@@ -44,7 +47,7 @@ class NormalizedIrisDataset(Dataset):
 
     def __create_label_map(self, classes):
         label_map = {label: i for i, label in enumerate(classes)}
-        label_map.update({"-1": -1})
+        label_map.update({-1: -1})
         return label_map
 
 
