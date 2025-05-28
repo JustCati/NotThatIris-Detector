@@ -4,12 +4,79 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
-from src.utils.eyes import normalize_eye, get_irismask
+
+from src.models.yolo import detect
+from src.utils.eyes import get_irismask
+
+
+
+def containment_percentage(box_a, box_b):
+    xa1, ya1, xa2, ya2 = box_a
+    xb1, yb1, xb2, yb2 = box_b
+
+    xi1 = max(xa1, xb1)
+    yi1 = max(ya1, yb1)
+    xi2 = min(xa2, xb2)
+    yi2 = min(ya2, yb2)
+
+    inter_width = max(0, xi2 - xi1)
+    inter_height = max(0, yi2 - yi1)
+    inter_area = inter_width * inter_height
+
+    area_a = (xa2 - xa1) * (ya2 - ya1)
+
+    if area_a == 0:
+        return 0.0
+    return inter_area / area_a
+
+
+def insert_eye(eyes, box, side):
+    if len(eyes[side]) > 0:
+        if containment_percentage(box, eyes[side][-1]) < 0.1:
+            eyes[side].append(box)
+            return
+        return
+    eyes[side].append(box)
+
+
+def find_eyes(yolo_det, img, PADDING=75):
+    results = detect(yolo_det, img, device="cuda")
+    
+    eyes = {
+        0: [],
+        1: []
+    }
+    half_width = img.width // 2
+
+    for result in results:
+        res = result.boxes
+        box = res.xyxy[0].cpu().numpy()
+        side = 0 if box[0] < half_width else 1
+        insert_eye(eyes, box, side)
+
+    for k, v in eyes.items():
+        if len(v) == 0:
+            continue
+        x1, y1, x2, y2 = v[0]
+        x1 = max(0, x1 - PADDING)
+        y1 = max(0, y1 - PADDING)
+        x2 = min(img.width, x2 + PADDING)
+        y2 = min(img.height, y2 + PADDING)
+        eyes[k] = [x1, y1, x2, y2]
+
+    output = []
+    for k, v in eyes.items():
+        if len(v) == 0:
+            continue
+        x1, y1, x2, y2 = v
+        crop = img.crop((x1, y1, x2, y2))
+        output.append(crop)
+    return output
 
 
 
 
-def normalize_dataset(yolo_instance, dataset_path, save_masks=False): 
+def normalize_dataset(yolo_instance, dataset_path, save_masks=False, distance=False): 
     all_image_full_paths = []
 
     for root_dir, _, file_names in os.walk(dataset_path):
@@ -22,31 +89,37 @@ def normalize_dataset(yolo_instance, dataset_path, save_masks=False):
         return
 
     for input_image_path in tqdm(all_image_full_paths, desc="Normalizing images"):
-        output_image_path = input_image_path.replace("images", "normalized")
-        if save_masks:
-            masks_output_path = input_image_path.replace("images", "masks")
-            os.makedirs(os.path.dirname(masks_output_path), exist_ok=True)
-
-        output_dir = os.path.dirname(output_image_path)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
         image = Image.open(input_image_path).convert("RGB")
-        try:
-            # norm = normalize_eye(image, yolo_instance)
-            norm = get_irismask(image, yolo_instance)
-            if norm is None:
-                print(f"Normalization failed for {input_image_path}, skipping.")
+        if distance:
+            yolo_det_istance, yolo_seg_instance = yolo_instance
+            eyes = find_eyes(yolo_det_istance, image)
+            eyes = [(img, input_image_path.replace(".jpg", f"_{i}.jpg")) for i, img in enumerate(eyes)]
+        else:
+            yolo_seg_instance = yolo_instance
+            eyes = [(image, input_image_path)]
+
+        for eye in eyes:
+            image, input_image_path = eye
+            try:
+                norm = get_irismask(image, yolo_seg_instance)
+                if norm is None:
+                    print(f"Normalization failed for {input_image_path}, skipping.")
+                    continue
+
+                output_image_path = input_image_path.replace("images_raw", "normalized")
+                os.makedirs(os.path.dirname(output_image_path), exist_ok=True)
+                cv2.imwrite(output_image_path, norm)
+                if save_masks:
+                    mask = norm.copy()
+                    mask = np.array(mask)
+                    mask[mask > 0] = 1
+
+                    masks_output_path = input_image_path.replace("images_raw", "masks")
+                    os.makedirs(os.path.dirname(masks_output_path), exist_ok=True)
+                    cv2.imwrite(masks_output_path, mask)
+            except Exception as e:
+                print(f"Error saving image {output_image_path}: {e}")
                 continue
-            cv2.imwrite(output_image_path, norm)
-            if save_masks:
-                mask = norm.copy()
-                mask = np.array(mask)
-                mask[mask > 0] = 1
-                cv2.imwrite(masks_output_path, mask)
-        except Exception as e:
-            print(f"Error saving image {output_image_path}: {e}")
-            continue
 
 
 def build_df(dataset_path):
