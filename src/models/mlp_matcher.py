@@ -45,6 +45,7 @@ class MLPMatcher(pl.LightningModule):
 
         loss = nn.CrossEntropyLoss()(y_hat, y)
         self._losses.append(loss.item())
+        self.log("train/loss", loss, on_step=True, on_epoch=False, prog_bar=True)
         return loss
 
 
@@ -78,8 +79,8 @@ class MLPMatcher(pl.LightningModule):
         _, frr, _, _, eer_index, _ = get_eer(self._val_y, self._val_y_pred)
         accuracy = accuracy_score(self._val_y_acc, self._val_y_pred_acc)
 
-        self.log("eval/accuracy", accuracy)
-        self.log("eval/eer", frr[eer_index])
+        self.log("eval/accuracy", accuracy, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("eval/eer", frr[eer_index], on_step=False, on_epoch=True, prog_bar=True)
         self.log("eval/acc+eer", accuracy - frr[eer_index])
         self.log("train/loss", self._loss_value)
 
