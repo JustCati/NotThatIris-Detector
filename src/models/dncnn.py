@@ -16,7 +16,7 @@ class WeightedMSELoss(nn.Module):
         super(WeightedMSELoss, self).__init__()
 
     def forward(self, input, target, weight):
-        return torch.sum(weight * (input - target) ** 2) / torch.sum(weight)
+        return torch.sum((weight * (input - target)) ** 2) / torch.sum(weight)
 
 
 def weighted_psnr_per_image(denoised, ground_truth, weight, max_pixel_value=1.0):
@@ -35,7 +35,7 @@ def weighted_psnr_per_image(denoised, ground_truth, weight, max_pixel_value=1.0)
     batch_size = denoised.size(0)
     psnr_values = []
     for i in range(batch_size):
-        mse = torch.sum(weight[i] * (denoised[i] - ground_truth[i]) ** 2) / torch.sum(weight[i])
+        mse = torch.sum((weight[i] * (denoised[i] - ground_truth[i])) ** 2) / torch.sum(weight[i])
         psnr = 10 * torch.log10(max_pixel_value ** 2 / mse)
         psnr_values.append(psnr)
     return torch.stack(psnr_values).mean()
@@ -83,6 +83,7 @@ class DNCNN(pl.LightningModule):
 
         loss = self.criterion(y_hat, y.to(self.device), mask.to(self.device))
         self._training_loss.append(loss.item())
+        self.log("train/loss", loss, on_step=True, on_epoch=False, prog_bar=True)
         return loss
 
 
@@ -122,10 +123,12 @@ class DNCNN(pl.LightningModule):
         gt_tensor = torch.from_numpy(ground_truth_all_np).to(self.device)
         pred_tensor = torch.from_numpy(predictions_all_np).to(self.device)
         mask_tensor = torch.from_numpy(masks_all_np).to(self.device)
+        
+        print(f"GT shape: {gt_tensor.shape}, Pred shape: {pred_tensor.shape}, Mask shape: {mask_tensor.shape}")
 
         val_loss_epoch = self.criterion(pred_tensor, gt_tensor, mask_tensor)
 
-        self.log("eval/val_loss", val_loss_epoch)
+        self.log("eval/val_loss", val_loss_epoch, on_step=False, on_epoch=True, prog_bar=True)
         self.log("train/loss", self._loss_value)
 
         gt_for_psnr = ground_truth_all_np.astype(np.uint8)
@@ -142,6 +145,7 @@ class DNCNN(pl.LightningModule):
 
         self._y = []
         self._y_pred = []
+        self._masks = []
 
 
     def test_step(self, batch, batch_idx):
