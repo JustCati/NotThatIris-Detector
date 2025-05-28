@@ -123,8 +123,6 @@ class DNCNN(pl.LightningModule):
         gt_tensor = torch.from_numpy(ground_truth_all_np).to(self.device)
         pred_tensor = torch.from_numpy(predictions_all_np).to(self.device)
         mask_tensor = torch.from_numpy(masks_all_np).to(self.device)
-        
-        print(f"GT shape: {gt_tensor.shape}, Pred shape: {pred_tensor.shape}, Mask shape: {mask_tensor.shape}")
 
         val_loss_epoch = self.criterion(pred_tensor, gt_tensor, mask_tensor)
 
