@@ -38,9 +38,9 @@ def main(args):
         normalize_dataset(yolo_instance, dataset_path, save_masks=True)
 
     transform = T.Compose([
-        T.GaussianBlur(kernel_size=15, sigma=(1.5, 3.0)),
+        T.GaussianBlur(kernel_size=25, sigma=(5, 15)),
         T.RandomHorizontalFlip(p=0.5),
-        T.JPEG(quality=(20, 50)),
+        T.JPEG(quality=(25)),
     ])
 
     cpu_count = multiprocessing.cpu_count() // 2

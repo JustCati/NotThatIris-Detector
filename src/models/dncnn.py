@@ -20,18 +20,6 @@ class WeightedMSELoss(nn.Module):
 
 
 def weighted_psnr_per_image(denoised, ground_truth, weight, max_pixel_value=1.0):
-    """
-    Computes the average weighted PSNR over a batch by calculating PSNR for each image individually.
-    
-    Parameters:
-    - denoised: Tensor of shape (N, C, H, W)
-    - ground_truth: Tensor of shape (N, C, H, W)
-    - weight: Tensor of shape (N, C, H, W)
-    - max_pixel_value: Maximum possible pixel value (default is 1.0 for normalized images)
-    
-    Returns:
-    - Average PSNR over the batch
-    """
     batch_size = denoised.size(0)
     psnr_values = []
     for i in range(batch_size):
@@ -39,7 +27,6 @@ def weighted_psnr_per_image(denoised, ground_truth, weight, max_pixel_value=1.0)
         psnr = 10 * torch.log10(max_pixel_value ** 2 / mse)
         psnr_values.append(psnr)
     return torch.stack(psnr_values).mean()
-
 
 
 class DNCNN(pl.LightningModule):
