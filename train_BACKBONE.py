@@ -21,7 +21,7 @@ from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
 def main(args):
     dataset_path = args.dataset_path
     root_dir = args.output_path
-    root_dir = os.path.join(root_dir, "RESNET50")
+    root_dir = os.path.join(root_dir, "EFFICIENTNET")
 
     L.seed_everything(4242, workers=True)
     torch.set_float32_matmul_precision("high")
@@ -56,8 +56,8 @@ def main(args):
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
     model = EfficientNet(num_classes=train_dataset.num_classes, verbose=True)
-    csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="resnet")
-    tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="resnet", version=csv_logger.version)
+    csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="efficientnet")
+    tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="efficientnet", version=csv_logger.version)
 
     best_checkpoint_saver = ModelCheckpoint(
         dirpath=os.path.join(root_dir, "models"),
