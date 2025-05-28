@@ -55,16 +55,6 @@ class NormalizedIrisDataset(Dataset):
             )
         )
         return df
-        # if "608-R" in df["Label"].unique():
-        #     df = df.drop(df[df["Label"] == "608-R"].index)
-        #     df = df.reset_index(drop=True)
-        # if "747-L" in df["Label"].unique():
-        #     df = df.drop(df[df["Label"] == "747-L"].index)
-        #     df = df.reset_index(drop=True)
-        # if self.use_upsampled:
-        #     df["ImagePath"] = df["ImagePath"].apply(
-        #         lambda x: x.replace("normalized_iris", "upsampled_iris")
-        #     )
 
 
     def __getitem__(self, idx):
