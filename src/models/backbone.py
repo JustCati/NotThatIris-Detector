@@ -3,16 +3,15 @@ import torch.nn as nn
 from sklearn.metrics import f1_score
 
 import lightning as pl
-from torchvision.models import resnet50
-from torchvision.models.resnet import ResNet50_Weights
+from torchvision.models import efficientnet_v2_s
 
 import warnings
 warnings.filterwarnings("ignore")
 
 
 
-class Resnet(pl.LightningModule):
-    def __init__(self, batch_size=32, num_classes=2000, verbose = False):
+class EfficientNet(pl.LightningModule):
+    def __init__(self, num_classes=2000, verbose = False):
         super().__init__()
         self._y = []
         self._y_pred = []
@@ -21,9 +20,8 @@ class Resnet(pl.LightningModule):
         self._training_loss = []
         self._loss_value = 1_000_000.0 # Just a big number
 
-        self.batch_size = batch_size
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
+        self.model = efficientnet_v2_s(weights="DEFAULT")
+        self.model.classifier = nn.Linear(self.model.classifier[1].in_features, num_classes)
         if verbose:
             print(self.model)
 
@@ -98,10 +96,11 @@ class FeatureExtractor(pl.LightningModule):
             self.model = model
         elif model_path is not None:
             num_classes = num_classes if num_classes is not None else 819
-            self.model = Resnet.load_from_checkpoint(model_path, num_classes=num_classes)
+            self.model = efficientnet_v2_s(weights="DEFAULT")
+            self.model.load_state_dict(torch.load(model_path, map_location="cpu")["state_dict"])
         else:
-            self.model = Resnet(num_classes=num_classes)
-        self.model.model.fc = nn.Identity()
+            self.model = EfficientNet(num_classes=num_classes)
+        self.model.model.classifier = nn.Identity()
         self.model.eval()
 
 

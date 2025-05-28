@@ -10,8 +10,8 @@ from torchvision.transforms import v2 as T
 from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
-from src.models.resnet import Resnet
 from src.models.yolo import getYOLO
+from src.models.backbone import EfficientNet
 from src.dataset.NormalizedDataset import NormalizedIrisDataset
 from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
 
@@ -55,7 +55,7 @@ def main(args):
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=cpu_count)
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
-    model = Resnet(num_classes=train_dataset.num_classes, batch_size=args.batch_size, verbose=True)
+    model = EfficientNet(num_classes=train_dataset.num_classes, verbose=True)
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="resnet")
     tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="resnet", version=csv_logger.version)
 
