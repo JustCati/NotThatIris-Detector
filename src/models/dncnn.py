@@ -1,4 +1,3 @@
-import cv2
 import math
 import torch
 import numpy as np
@@ -32,13 +31,11 @@ def weighted_psnr_per_image(denoised, ground_truth, weight, max_pixel_value=1.0)
 class DNCNN(pl.LightningModule):
     def __init__(self, verbose = False):
         super().__init__()
-        self._y = []
-        self._masks = []
-        self._y_pred = []
-        self._y_loss = []
-        self._y_hat_loss = []
         self._training_loss = []
+        self._batch_val_loss = []
+        self._batch_val_psnrs = []
         self._loss_value = 1_000_000.0 # Just a big number
+
 
         self.model = DnCNN(channels=3, num_of_layers=20)
         self.model = self.model.apply(self.__weights_init_kaiming)
@@ -75,18 +72,26 @@ class DNCNN(pl.LightningModule):
 
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
-        y, mask = y
-        y_hat = self(x.to(self.device))
+        x, y_data = batch
+        y_true, mask = y_data
+        y_pred = self(x.to(self.device))
 
-        self._y_loss.extend(y_hat.cpu().numpy())
-        self._y_hat_loss.extend(y_hat.cpu().numpy())
+        y_true = y_true.to(self.device)
+        mask_dev = mask.to(self.device).float()
 
-        y = y.cpu().numpy()
-        y_hat = y_hat.cpu().numpy()
-        self._y.extend(y)
-        self._y_pred.extend(y_hat)
-        self._masks.extend(mask.cpu().numpy())
+        pred_for_psnr_batch = (y_pred.detach() * 255.0).clamp(0, 255).byte()
+        gt_for_psnr_batch = (y_true * 255.0).clamp(0, 255).byte()
+
+        batch_psnr = weighted_psnr_per_image(
+            denoised=pred_for_psnr_batch,
+            ground_truth=gt_for_psnr_batch,
+            weight=mask_dev,
+            max_pixel_value=255.0
+        )
+        self._batch_val_psnrs.append(batch_psnr.item())
+        
+        batch_loss = self.criterion(y_pred, y_true, mask_dev)
+        self._batch_val_loss.append(batch_loss.item())
 
 
     def on_train_epoch_end(self):
@@ -96,41 +101,15 @@ class DNCNN(pl.LightningModule):
 
 
     def on_validation_epoch_end(self):
-        if not self._y or not self._y_pred:
-            self.log("eval/val_loss", float('nan'), on_step=False, on_epoch=True, prog_bar=True)
-            self.log("eval/psnr", float('nan'), on_step=False, on_epoch=True, prog_bar=True)
-            self._y = []
-            self._y_pred = []
-            return
-
-        ground_truth_all_np = np.concatenate(self._y, axis=0)
-        predictions_all_np = np.concatenate(self._y_pred, axis=0)
-        masks_all_np = np.concatenate(self._masks, axis=0)
-
-        gt_tensor = torch.from_numpy(ground_truth_all_np).to(self.device)
-        pred_tensor = torch.from_numpy(predictions_all_np).to(self.device)
-        mask_tensor = torch.from_numpy(masks_all_np).to(self.device)
-
-        val_loss_epoch = self.criterion(pred_tensor, gt_tensor, mask_tensor)
-
-        self.log("eval/val_loss", val_loss_epoch, on_step=False, on_epoch=True, prog_bar=True)
+        epoch_loss = torch.tensor(self._batch_val_loss).mean()
+        self.log("eval/val_loss", epoch_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("train/loss", self._loss_value)
 
-        gt_for_psnr = ground_truth_all_np.astype(np.uint8)
-        pred_for_psnr = predictions_all_np.astype(np.uint8)
-        masks_all_np = masks_all_np.astype(np.float32)
+        epoch_psnr = torch.tensor(self._batch_val_psnrs).mean()
+        self.log("eval/psnr", epoch_psnr, on_step=False, on_epoch=True, prog_bar=True)
 
-        psnr_value = weighted_psnr_per_image(
-            denoised=torch.from_numpy(pred_for_psnr).to(self.device),
-            ground_truth=torch.from_numpy(gt_for_psnr).to(self.device),
-            weight=torch.from_numpy(masks_all_np).to(self.device),
-            max_pixel_value=255.0
-        )
-        self.log("eval/psnr", psnr_value)
-
-        self._y = []
-        self._y_pred = []
-        self._masks = []
+        self._batch_val_loss = []
+        self._batch_val_psnrs = []
 
 
     def test_step(self, batch, batch_idx):
