@@ -12,6 +12,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
 from src.models.dncnn import DNCNN
 from src.models.yolo import getYOLO
+from src.models.backbone import FeatureExtractor
 from src.dataset.DenoiseDataset import NormalizedIrisDataset
 from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
 
@@ -50,7 +51,9 @@ def main(args):
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=cpu_count)
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
-    model = DNCNN(verbose=True)
+    feat_extractor = FeatureExtractor(model_path=args.feat_extractor)
+    model = DNCNN(feat_extractor, verbose=True)
+    
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="dncnn")
     tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="dncnn", version=csv_logger.version)
 
@@ -58,14 +61,14 @@ def main(args):
         dirpath=os.path.join(root_dir, "models"),
         filename="best",
         save_top_k=1,
-        monitor="eval/psnr",
+        monitor="eval/final_eval",
         mode="max",
         verbose=True,
         save_last=True
         )
 
     early_stop_callback = EarlyStopping(
-        monitor="eval/psnr",
+        monitor="eval/final_eval",
         min_delta=0.006,
         patience=5,
         verbose=False, 
@@ -92,6 +95,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
     parser.add_argument("--output_path", type=str, default=os.path.join(os.path.dirname(__file__), "ckpts"))
+    parser.add_argument("--feat_extractor", type=str, default="")
     parser.add_argument("--yolo_path", type=str, default="")
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--batch_size", type=int, default=32)
