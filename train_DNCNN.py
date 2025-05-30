@@ -85,7 +85,8 @@ def main(args):
 
     trainer.fit(model=model, 
                 train_dataloaders=train_dataloader,
-                val_dataloaders=eval_dataloader
+                val_dataloaders=eval_dataloader,
+                ckpt_path=args.resume if args.resume else None
                 )
 
 
@@ -96,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
     parser.add_argument("--output_path", type=str, default=os.path.join(os.path.dirname(__file__), "ckpts"))
     parser.add_argument("--feat_extractor", type=str, default="")
+    parser.add_argument("--resume", type=str, default="", help="Path to the checkpoint to resume training from")
     parser.add_argument("--yolo_path", type=str, default="")
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--batch_size", type=int, default=32)
