@@ -61,7 +61,7 @@ class ResidualInResidualDenseBlock(nn.Module):
 
 
 class Generator(nn.Module):
-    def __init__(self, channels, filters=64, num_res_blocks=16, num_upsample=2):
+    def __init__(self, channels, filters=64, num_res_blocks=16, num_upsample=2, factor=2):
         super(Generator, self).__init__()
 
         # First layer
@@ -74,9 +74,9 @@ class Generator(nn.Module):
         upsample_layers = []
         for _ in range(num_upsample):
             upsample_layers += [
-                nn.Conv2d(filters, filters * 4, kernel_size=3, stride=1, padding=1),
+                nn.Conv2d(filters, filters, kernel_size=3, stride=1, padding=1),
                 nn.LeakyReLU(),
-                nn.PixelShuffle(upscale_factor=2),
+                nn.PixelShuffle(upscale_factor=factor),
             ]
         self.upsampling = nn.Sequential(*upsample_layers)
         # Final output block
@@ -103,7 +103,7 @@ class Discriminator(nn.Module):
         self.input_shape = input_shape
         in_channels, in_height, in_width = self.input_shape
         patch_h, patch_w = int(in_height / 2 ** 4), int(in_width / 2 ** 4)
-        self.output_shape = (1, patch_h, patch_w)
+        self.output_shape = (1, patch_h + 1, patch_w + 1)
 
         def discriminator_block(in_filters, out_filters, first_block=False):
             layers = []
