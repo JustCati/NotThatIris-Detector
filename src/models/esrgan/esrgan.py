@@ -81,7 +81,6 @@ class GAN(pl.LightningModule):
         
         pred_fake = self.discriminator(pred.detach())
         valid = torch.ones(x.size(0), *self.discriminator.output_shape).type_as(x).to(self.device)
-        print(f"pred_fake shape: {pred_fake.shape}, valid shape: {valid.shape}")
         dis_loss = self.discriminator_criterion(pred_fake, valid)
         
         with torch.no_grad():
