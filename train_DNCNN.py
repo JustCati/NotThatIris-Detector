@@ -10,8 +10,8 @@ from torchvision.transforms import v2 as T
 from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
-from src.models.dncnn import DNCNN
 from src.models.yolo import getYOLO
+from src.models.esrgan.esrgan import GAN
 from src.models.backbone import FeatureExtractor
 from src.dataset.DenoiseDataset import NormalizedIrisDataset
 from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
@@ -39,20 +39,21 @@ def main(args):
         normalize_dataset(yolo_instance, dataset_path, save_masks=True)
 
     transform = T.Compose([
-        T.GaussianBlur(kernel_size=25, sigma=(5, 15)),
+        T.GaussianBlur(kernel_size=11, sigma=(5)),
         T.RandomHorizontalFlip(p=0.5),
-        T.JPEG(quality=(25)),
+        T.JPEG(quality=(50)),
     ])
 
     cpu_count = multiprocessing.cpu_count() // 2
     train_dataset = NormalizedIrisDataset(train_csv_path, transform=transform)
     eval_dataset = NormalizedIrisDataset(test_csv_path, transform=transform)
+    image_shape = train_dataset[0][0].shape[1:3] # C, H, W
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=cpu_count)
     eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
     feat_extractor = FeatureExtractor(model_path=args.feat_extractor)
-    model = DNCNN(feat_extractor, verbose=True)
+    model = GAN(image_shape=image_shape, feat_extractor=feat_extractor, verbose=True)
     
     csv_logger = CSVLogger(os.path.join(root_dir, "logs"), name="dncnn")
     tb_logger = TensorBoardLogger(os.path.join(root_dir, "logs"), name="dncnn", version=csv_logger.version)
