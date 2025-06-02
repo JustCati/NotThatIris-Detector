@@ -77,7 +77,7 @@ def find_eyes(yolo_det, img, PADDING=75):
 
 
 
-def normalize_dataset(yolo_instance, dataset_path, save_masks=False, distance=False): 
+def normalize_dataset(yolo_instance, dataset_path, distance=False): 
     all_image_full_paths = []
 
     for root_dir, _, file_names in os.walk(dataset_path):
@@ -110,14 +110,6 @@ def normalize_dataset(yolo_instance, dataset_path, save_masks=False, distance=Fa
                 output_image_path = input_image_path.replace("images_raw", "normalized")
                 os.makedirs(os.path.dirname(output_image_path), exist_ok=True)
                 cv2.imwrite(output_image_path, norm)
-                if save_masks:
-                    mask = norm.copy()
-                    mask = np.array(mask)
-                    mask[mask > 0] = 1
-
-                    masks_output_path = input_image_path.replace("images_raw", "masks")
-                    os.makedirs(os.path.dirname(masks_output_path), exist_ok=True)
-                    cv2.imwrite(masks_output_path, mask)
             except Exception as e:
                 print(f"Error saving image {output_image_path}: {e}")
                 continue

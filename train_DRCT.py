@@ -28,7 +28,7 @@ def main(args):
     if not os.path.exists(os.path.join(dataset_path, "normalized")):
         print("Normalizing iris images...")
         yolo_instance = getYOLO(args.yolo_path, task="segment", device="cuda", inference=True)
-        normalize_dataset(yolo_instance, dataset_path, save_masks=False)
+        normalize_dataset(yolo_instance, dataset_path)
 
     train_pipeline(os.path.dirname(__file__))
 
