@@ -1,6 +1,5 @@
 import os
 import torch
-import numpy as np
 import pandas as pd
 from PIL import Image
 from torchvision import transforms
@@ -67,6 +66,8 @@ class NormalizedIrisDataset(Dataset):
         label = self.label_map[self.gt.loc[idx, "Label"]]
 
         img = Image.open(img_path)
+        if img.size[0] != 128:
+            img = img.resize((128, 128), resample=Image.Resampling.BICUBIC)
         if self.transform:
             if torch.rand(1) < self.p:
                 img = self.transform(img)
