@@ -20,7 +20,7 @@ class UpsampleDataset(Dataset):
         csv_file = opt["csv_file"]
         if csv_file.startswith("/"):
             csv_file = csv_file[1:]
-        csv_file = os.path.join(root_path, csv_file) #! DEBUG THIS
+        csv_file = os.path.join(root_path, csv_file)
         self.gt = pd.read_csv(csv_file, index_col=0)
         self.gt = self.gt["ImagePath"].apply(
             lambda x: x.replace(
