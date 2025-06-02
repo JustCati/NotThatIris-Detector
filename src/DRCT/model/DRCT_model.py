@@ -1,0 +1,72 @@
+import torch
+from collections import OrderedDict
+from src.models.backbone import FeatureExtractor
+from external.DRCT.drct.models.drct_model import DRCTModel
+
+from basicsr.losses import build_loss
+from basicsr.archs import build_network
+from basicsr.utils import get_root_logger
+from basicsr.utils.registry import MODEL_REGISTRY
+
+
+
+@MODEL_REGISTRY.register()
+class DRCTModelFinal(DRCTModel):
+    def __init__(self, opt):
+        super(DRCTModelFinal, self).__init__(opt)
+
+        self.feat_extractor_path = self.opt.get('feat_extractor_path', None)
+        if self.feat_extractor_path:
+            self.feat_extractor = FeatureExtractor(self.feat_extractor_path).to(self.device)
+            self.feat_extractor.eval()
+            print(f'Feature extractor loaded from {self.feat_extractor_path}')
+
+
+    def init_training_settings(self):
+        self.net_g.train()
+        train_opt = self.opt['train']
+
+        self.ema_decay = train_opt.get('ema_decay', 0)
+        if self.ema_decay > 0:
+            logger = get_root_logger()
+            logger.info(f'Use Exponential Moving Average with decay: {self.ema_decay}')
+            self.net_g_ema = build_network(self.opt['network_g']).to(self.device)
+            load_path = self.opt['path'].get('pretrain_network_g', None)
+            if load_path is not None:
+                self.load_network(self.net_g_ema, load_path, self.opt['path'].get('strict_load_g', True), 'params_ema')
+            else:
+                self.model_ema(0)
+            self.net_g_ema.eval()
+
+        self.pix_loss = build_loss(train_opt['pixel_loss']).to(self.device)
+        self.ctx_loss = build_loss(train_opt['context_loss']).to(self.device)
+
+        self.setup_optimizers()
+        self.setup_schedulers()
+    
+    
+    def optimize_parameters(self, current_iter):
+        self.optimizer_g.zero_grad()
+        self.output = self.net_g(self.lq)
+
+        self.feat_y = self.feat_extractor(self.gt) if hasattr(self, 'feat_extractor') else None
+        self.feat_pred = self.feat_extractor(self.output) if hasattr(self, 'feat_extractor') else None
+
+        l_total = 0
+        loss_dict = OrderedDict()
+        l_pixel = self.pix_loss(self.output, self.gt)
+        loss_dict['l_pixel'] = l_pixel
+        l_total += l_pixel
+        
+        l_context = self.ctx_loss(self.feat_pred, self.feat_y)
+        loss_dict['l_context'] = l_context
+        l_total += l_context
+        
+        l_total.backward()
+        self.optimizer_g.step()
+        
+        self.log_dict = self.reduce_loss_dict(loss_dict)
+
+        if self.ema_decay > 0:
+            self.model_ema(self.ema_decay)
+        

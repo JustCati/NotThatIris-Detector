@@ -2,10 +2,11 @@ import os
 import argparse
 
 from external.DRCT.drct.archs import *
-from external.DRCT.drct.models import *
+from src.DRCT.model.DRCT_model import *
 from src.DRCT.data.UpsampleDataset_dataset import *
 from src.DRCT.losses.WeightedL1Loss_loss import *
 from src.DRCT.metrics.WeightedPSNR_metric import *
+from src.DRCT.losses.ContextLoss_loss import *
 
 from src.models.yolo import getYOLO
 from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
