@@ -23,6 +23,13 @@ class MLPMatcher(pl.LightningModule):
             print(self.Classifier)
 
 
+    def set_extractor(self, extractor):
+        if isinstance(extractor, nn.Module):
+            self.extractor = extractor
+        else:
+            raise ValueError("Extractor must be an instance of nn.Module")
+
+
     def set_threshold(self, threshold):
         self.threshold = threshold
 
@@ -36,6 +43,13 @@ class MLPMatcher(pl.LightningModule):
             mask = x > self.threshold
             x[~mask] = 0
         return x
+
+
+    def on_save_checkpoint(self, checkpoint):
+        toPop = [key for key in checkpoint["state_dict"].keys() if key.startswith("extractor.")]
+        for key in toPop:
+            checkpoint["state_dict"].pop(key)
+        checkpoint["threshold"] = self.threshold
 
 
     def training_step(self, batch, batch_idx):
