@@ -1,6 +1,6 @@
 # general settings
 name: DRCT_SR
-model_type: DRCTModel
+model_type: DRCTModelFinal
 scale: 1
 num_gpu: 1
 manual_seed: 0
@@ -50,6 +50,8 @@ network_g:
   upsampler: 'pixelshuffle'
   resi_connection: '1conv'
 
+feat_extractor_path: "/home/cati/Desktop/Dev/NotThatIris-Detector/ckpts/EFFICIENTNET/models/best.ckpt"
+
 # path
 path:
   pretrain_network_g: ~
@@ -74,8 +76,11 @@ train:
   warmup_iter: -1  # no warm up
 
   # losses
-  pixel_opt:
+  pixel_loss:
     type: WeightedL1Loss
+    reduction: mean
+  context_loss:
+    type: ContextLoss
     reduction: mean
 
 # validation settings
