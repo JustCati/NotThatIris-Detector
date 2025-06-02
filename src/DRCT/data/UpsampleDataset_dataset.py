@@ -16,8 +16,11 @@ from basicsr.data.degradations import add_jpg_compression
 class UpsampleDataset(Dataset):
     def __init__(self, opt):
         self.opt = opt
+        root_path = opt["root_path"]
         csv_file = opt["csv_file"]
-        csv_file = os.path.join(os.path.dirname(__file__), csv_file) #! DEBUG THIS
+        if csv_file.startswith("/"):
+            csv_file = csv_file[1:]
+        csv_file = os.path.join(root_path, csv_file) #! DEBUG THIS
         self.gt = pd.read_csv(csv_file, index_col=0)
         self.gt = self.gt["ImagePath"].apply(
             lambda x: x.replace(
