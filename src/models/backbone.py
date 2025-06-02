@@ -94,11 +94,9 @@ class EfficientNet(pl.LightningModule):
 
 
 class FeatureExtractor(pl.LightningModule):
-    def __init__(self, model=None, model_path=None):
+    def __init__(self, model_path=None):
         super().__init__()
-        if model is not None:
-            self.model = model
-        elif model_path is not None:
+        if model_path is not None:
             state_dict = torch.load(model_path, map_location="cpu")["state_dict"]
             src_num_classes = state_dict["model.classifier.weight"].shape[0]
             self.model = EfficientNet.load_from_checkpoint(model_path, num_classes=src_num_classes)
