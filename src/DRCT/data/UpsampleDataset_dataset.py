@@ -47,7 +47,7 @@ class UpsampleDataset(Dataset):
 
         h, w = hq.shape[:2]
         scale = self.opt["scale"]
-        lq = lq.resize((w // scale, h // scale), interpolation=cv2.INTER_CUBIC)
+        lq = cv2.resize(lq, (w // scale, h // scale), interpolation=cv2.INTER_LINEAR)
 
         lq = cv2.transpose(lq, (2, 0, 1))
         lq = GaussianBlur(kernel_size=11, sigma=5)(lq)
@@ -56,7 +56,7 @@ class UpsampleDataset(Dataset):
         
         if self.opt['phase'] == 'train':
             gt_size = self.opt['gt_size']
-            img_gt, img_lq = augment([hq, lq], self.opt['use_flip'], self.opt['use_rot'])
+            img_gt, img_lq = augment([hq, lq], self.opt['use_hflip'], self.opt['use_rot'])
 
         img_gt, img_lq = img2tensor([img_gt, img_lq], bgr2rgb=True, float32=True)
         return {"img_gt": img_gt, "img_lq": img_lq}
