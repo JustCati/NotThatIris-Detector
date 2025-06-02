@@ -169,7 +169,6 @@ def main(args):
 
     model_checkpoint = torch.load(os.path.join(root_dir, "models", "best.ckpt"))
     model_checkpoint["threshold"] = best_test_threshold
-    model_checkpoint["state_dict"]["threshold"] = best_test_threshold
     torch.save(model_checkpoint, os.path.join(root_dir, "models", "best_with_threshold.ckpt"))
 
 
