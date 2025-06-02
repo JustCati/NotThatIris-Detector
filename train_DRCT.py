@@ -1,11 +1,11 @@
 import os
 import argparse
 
-from src.DRCT.data import *
-from src.DRCT.losses import *
-from src.DRCT.metrics import *
 from external.DRCT.drct.archs import *
 from external.DRCT.drct.models import *
+from src.DRCT.data.UpsampleDataset_dataset import *
+from src.DRCT.losses.WeightedL1Loss_loss import *
+from src.DRCT.metrics.WeightedPSNR_metric import *
 
 from src.models.yolo import getYOLO
 from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
@@ -40,7 +40,6 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
     parser.add_argument("--output_path", type=str, default=os.path.join(os.path.dirname(__file__), "ckpts"))
     parser.add_argument("--yolo_path", type=str, default="")
-    parser.add_argument("--num_epochs", type=int, default=10)
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("-opt", type=str, default=os.path.join(os.path.dirname(__file__), "DRCT.yml")),
     args = parser.parse_args()
     main(args)
