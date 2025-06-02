@@ -4,7 +4,7 @@ from src.models.yolo import detect
 
 
 
-def get_irismask(eyeimage, model, output_size=(360, 360)):
+def get_irismask(eyeimage, model, output_size=(128, 128)):
     res = detect(model, eyeimage, device="cuda")
     pred_classes = res.boxes.cls.cpu().numpy()
 
