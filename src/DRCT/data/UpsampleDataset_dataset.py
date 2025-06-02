@@ -58,7 +58,7 @@ class UpsampleDataset(Dataset):
             img_gt, img_lq = augment([hq, lq], self.opt['use_hflip'], self.opt['use_rot'])
 
         img_gt, img_lq = img2tensor([img_gt, img_lq], bgr2rgb=True, float32=True)
-        return {"hq": img_gt, "lq": img_lq}
+        return {"gt": img_gt, "lq": img_lq}
 
 
     def __len__(self):
