@@ -104,6 +104,7 @@ def main(args):
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=cpu_count)
 
     num_classes = len(train_dataset.get_active_labels())
+    print(f"Number of classes: {num_classes}")
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     backbone = FeatureExtractor(model_path=args.backbone_path).to(device)
