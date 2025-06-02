@@ -43,6 +43,8 @@ class UpsampleDataset(Dataset):
         img_path = self.gt[idx]
         
         hq = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        if hq.size[0] != 128:
+            hq = cv2.resize(hq, (128, 128), interpolation=cv2.INTER_LINEAR)
         lq = hq.copy()
 
         h, w = hq.shape[:2]
