@@ -39,6 +39,7 @@ class ImageApp:
                                        pady=button_ipady_inner)
         self.submit_button.pack(pady=button_pady_outer)
 
+
     def upload_image(self):
         file_path = filedialog.askopenfilename(
             title="Select an image",
@@ -47,6 +48,7 @@ class ImageApp:
         if file_path:
             self.uploaded_image_path = file_path
             print(f"Uploaded: {file_path}")
+
 
     def start_background_task(self):
         if not self.uploaded_image_path:
@@ -82,8 +84,8 @@ class ImageApp:
 
 
     def background_process(self):
-        img = Image.open(self.uploaded_image_path).convert("RGB")
-        scores, predictions = self.model(img)
+        img_pil = Image.open(self.uploaded_image_path).convert("RGB") 
+        scores, predictions, data_dict = self.model(img_pil)
         
         all_same = all(pred == predictions[0] for pred in predictions)
         if not all_same:
@@ -93,30 +95,38 @@ class ImageApp:
             pred = predictions[0]
         pred_label = self.label_map.get(pred, "Unknown")
         original_label = os.path.basename(self.uploaded_image_path).split('.')[0][2:5]
-        
         result_text = f"GT: {original_label}    PRED: {pred_label}"
-        img = Image.open(self.uploaded_image_path).resize((200, 200))
-        img1 = img.copy().resize((150, 150))
-        img2 = img.copy().resize((150, 150))
+        
+        
+        main_display_img = Image.open(self.uploaded_image_path).resize((200, 200))
+        eye_pos_left_pil = data_dict["det"][0].copy().resize((150, 150))
+        eye_pos_right_pil = data_dict["det"][1].copy().resize((150, 150))
+        
+        iris_seg_1_pil = data_dict["mask"][0].copy().resize((150, 150))
+        iris_seg_2_pil = data_dict["mask"][0].copy().resize((150, 150))
 
-        self.root.after(0, lambda: self.open_second_window(img, img1, img2, result_text))
+        self.root.after(0, lambda: self.open_second_window(
+            main_display_img, 
+            eye_pos_left_pil, 
+            eye_pos_right_pil, 
+            iris_seg_1_pil, 
+            iris_seg_2_pil, 
+            result_text
+        ))
 
 
-    def open_second_window(self, main_img, small_img1, small_img2, result_text):
+    def open_second_window(self, main_img, eye_det_img_left, eye_det_img_right, small_img1, small_img2, result_text):
         self.spinner_active = False
 
         for widget in self.second_window.winfo_children():
             widget.destroy()
-
         
         base_font_size = 12  
         title_font = ("Arial", base_font_size + 2, "bold")
         text_font = ("Arial", base_font_size)
-
         
         top_images_frame = tk.Frame(self.second_window)
         top_images_frame.pack(pady=10, padx=10, fill="x", expand=True)
-
         
         original_image_container = tk.Frame(top_images_frame)
         original_image_container.pack(side=tk.LEFT, padx=10, expand=True, fill="both")
@@ -135,10 +145,18 @@ class ImageApp:
         label_eye_detection_title = tk.Label(eye_detection_container, text="Eye position detection", font=title_font)
         label_eye_detection_title.pack(pady=(0, 5))
         
-        eye_detection_img_tk = ImageTk.PhotoImage(main_img) 
-        label_eye_detection_img = tk.Label(eye_detection_container, image=eye_detection_img_tk)
-        label_eye_detection_img.image = eye_detection_img_tk  
-        label_eye_detection_img.pack(expand=True, fill="both")
+        eye_detection_images_subframe = tk.Frame(eye_detection_container)
+        eye_detection_images_subframe.pack()
+
+        eye_det_img_left_tk = ImageTk.PhotoImage(eye_det_img_left)
+        label_eye_left = tk.Label(eye_detection_images_subframe, image=eye_det_img_left_tk)
+        label_eye_left.image = eye_det_img_left_tk  
+        label_eye_left.pack(side=tk.LEFT, padx=5, expand=True, fill="both")
+
+        eye_det_img_right_tk = ImageTk.PhotoImage(eye_det_img_right)
+        label_eye_right = tk.Label(eye_detection_images_subframe, image=eye_det_img_right_tk)
+        label_eye_right.image = eye_det_img_right_tk 
+        label_eye_right.pack(side=tk.LEFT, padx=5, expand=True, fill="both") 
         
         segmentation_container_frame = tk.Frame(self.second_window)
         segmentation_container_frame.pack(pady=10, padx=10, fill="x", expand=True)

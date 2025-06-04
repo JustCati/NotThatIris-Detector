@@ -1,4 +1,5 @@
 import torch
+import copy
 import numpy as np
 import torch.nn as nn
 from PIL import Image
@@ -22,20 +23,22 @@ class IrisDetector(nn.Module):
 
 
     def forward(self, x):
+        data_dict = {}
         with torch.no_grad():
             for name, module in self.named_modules():
                 if name == 'yolo_det':
                     x = find_eyes(module, x)
+                    data_dict["det"] = copy.deepcopy(x)
                 if name == 'yolo_seg' and isinstance(x, list):
                     x = [get_irismask(eye, module) for eye in x]
-                    if not all(isinstance(eye, torch.Tensor) for eye in x):
-                        x = [T.ToTensor()(Image.fromarray(eye)) if isinstance(eye, np.ndarray) else eye for eye in x]
-                        x = [elem.to(module.device).unsqueeze(0) for elem in x]
+                    data_dict["mask"] = copy.deepcopy(x)
+                    data_dict["mask"] = [Image.fromarray(mask) if isinstance(mask, np.ndarray) else mask for mask in data_dict["mask"]]
                 if name == 'sr':
                     pass # Placeholder for super-resolution model if needed
                 if name == 'backbone':
-                    if not isinstance(x, list):
-                        x = [x]
+                    if not all(isinstance(eye, torch.Tensor) for eye in x):
+                        x = [T.ToTensor()(Image.fromarray(eye)) if isinstance(eye, np.ndarray) else eye for eye in x]
+                        x = [elem.to(module.device).unsqueeze(0) for elem in x]
                     x = [module(eye) for eye in x]
                     x = [elem.squeeze(0) if isinstance(elem, torch.Tensor) else elem for elem in x]
                 if name == 'mlp':
@@ -44,4 +47,4 @@ class IrisDetector(nn.Module):
                     x = module(x)
                     scores = x.max(dim=1).values.cpu().numpy().tolist()
                     preds = x.argmax(dim=1).cpu().numpy().tolist()
-            return scores, preds
+            return scores, preds, data_dict
