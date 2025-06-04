@@ -40,9 +40,13 @@ def main(args):
     })
     iris_detector.to(args.device)
     
+
+    with open("label_map.txt", "r") as f:
+        label_map = [line.strip() for line in f.readlines()]
+        label_map = {int(elem.split(": ")[0]): int(elem.split(": ")[1]) for elem in label_map}
     
     root = tk.Tk()
-    _ = ImageApp(root, model=iris_detector)
+    _ = ImageApp(root, model=iris_detector, label_map=label_map)
     root.mainloop()
 
 
