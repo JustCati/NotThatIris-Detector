@@ -21,11 +21,23 @@ class ImageApp:
         self.spinner_active = False
         self.spinner_dots = 0
         
-        self.upload_button = tk.Button(root, text="Upload Image", command=self.upload_image)
-        self.upload_button.pack(pady=20)
+        button_font = ("Arial", 14)
+        button_width = 20  
+        button_pady_outer = 10 
+        button_ipady_inner = 5 
+        
+        button_frame = tk.Frame(root)
+        button_frame.pack(pady=30, expand=True) 
 
-        self.submit_button = tk.Button(root, text="Submit", command=self.start_background_task)
-        self.submit_button.pack(pady=10)
+        self.upload_button = tk.Button(button_frame, text="Upload Image", command=self.upload_image,
+                                       font=button_font, width=button_width,
+                                       pady=button_ipady_inner)
+        self.upload_button.pack(pady=button_pady_outer)
+
+        self.submit_button = tk.Button(button_frame, text="Submit", command=self.start_background_task,
+                                       font=button_font, width=button_width,
+                                       pady=button_ipady_inner)
+        self.submit_button.pack(pady=button_pady_outer)
 
     def upload_image(self):
         file_path = filedialog.askopenfilename(
@@ -91,35 +103,79 @@ class ImageApp:
 
 
     def open_second_window(self, main_img, small_img1, small_img2, result_text):
-        self.spinner_active = False  
+        self.spinner_active = False
 
         for widget in self.second_window.winfo_children():
             widget.destroy()
 
+        
+        base_font_size = 12  
+        title_font = ("Arial", base_font_size + 2, "bold")
+        text_font = ("Arial", base_font_size)
+
+        
+        top_images_frame = tk.Frame(self.second_window)
+        top_images_frame.pack(pady=10, padx=10, fill="x", expand=True)
+
+        
+        original_image_container = tk.Frame(top_images_frame)
+        original_image_container.pack(side=tk.LEFT, padx=10, expand=True, fill="both")
+
+        label_original_title = tk.Label(original_image_container, text="Original Image", font=title_font)
+        label_original_title.pack(pady=(0, 5))
+
         main_img_tk = ImageTk.PhotoImage(main_img)
-        label_main = tk.Label(self.second_window, image=main_img_tk)
-        label_main.image = main_img_tk
-        label_main.pack(pady=10)
+        label_main_img = tk.Label(original_image_container, image=main_img_tk)
+        label_main_img.image = main_img_tk  
+        label_main_img.pack(expand=True, fill="both")
 
-        frame = tk.Frame(self.second_window)
-        frame.pack()
+        
+        
+        eye_detection_container = tk.Frame(top_images_frame)
+        eye_detection_container.pack(side=tk.RIGHT, padx=10, expand=True, fill="both")
 
-        img1_tk = ImageTk.PhotoImage(small_img1)
-        label1 = tk.Label(frame, image=img1_tk)
-        label1.image = img1_tk
-        label1.pack(side=tk.LEFT, padx=5)
+        label_eye_detection_title = tk.Label(eye_detection_container, text="Eye position detection", font=title_font)
+        label_eye_detection_title.pack(pady=(0, 5))
+        
+        
+        eye_detection_img_tk = ImageTk.PhotoImage(main_img) 
+        label_eye_detection_img = tk.Label(eye_detection_container, image=eye_detection_img_tk)
+        label_eye_detection_img.image = eye_detection_img_tk  
+        label_eye_detection_img.pack(expand=True, fill="both")
 
-        img2_tk = ImageTk.PhotoImage(small_img2)
-        label2 = tk.Label(frame, image=img2_tk)
-        label2.image = img2_tk
-        label2.pack(side=tk.LEFT, padx=5)
+        
+        segmentation_container_frame = tk.Frame(self.second_window)
+        segmentation_container_frame.pack(pady=10, padx=10, fill="x", expand=True)
 
-        textbox = tk.Entry(self.second_window, justify='center')
+        label_segmentation_title = tk.Label(segmentation_container_frame, text="Iris Segmentation", font=title_font)
+        label_segmentation_title.pack(pady=(0, 5)) 
+
+        segmentation_images_frame = tk.Frame(segmentation_container_frame)
+        segmentation_images_frame.pack() 
+
+        small_img1_tk = ImageTk.PhotoImage(small_img1)
+        label_small1 = tk.Label(segmentation_images_frame, image=small_img1_tk)
+        label_small1.image = small_img1_tk  
+        label_small1.pack(side=tk.LEFT, padx=5, expand=True, fill="both")
+
+        small_img2_tk = ImageTk.PhotoImage(small_img2)
+        label_small2 = tk.Label(segmentation_images_frame, image=small_img2_tk)
+        label_small2.image = small_img2_tk  
+        label_small2.pack(side=tk.LEFT, padx=5, expand=True, fill="both")
+
+        
+        textbox_frame = tk.Frame(self.second_window) 
+        textbox_frame.pack(pady=10, padx=10, fill="x")
+        
+        textbox = tk.Entry(textbox_frame, justify='center', font=text_font)
         textbox.insert(0, result_text)
-        textbox.pack(pady=10)
+        
+        
+        textbox.pack(fill="x", expand=True, ipady=5) 
 
-        back_button = tk.Button(self.second_window, text="Back", command=self.go_back)
-        back_button.pack(pady=10)
+        
+        back_button = tk.Button(self.second_window, text="Back", command=self.go_back, font=text_font)
+        back_button.pack(pady=(10, 20)) 
 
 
     def go_back(self):
