@@ -1,13 +1,17 @@
-import tkinter as tk
-from tkinter import filedialog, messagebox
-from PIL import Image, ImageTk
+import os
 import threading
-import time
+import tkinter as tk
+from PIL import Image
+from PIL import Image, ImageTk
+from tkinter import filedialog, messagebox
 
 
 class ImageApp:
-    def __init__(self, root):
+    def __init__(self, root, model, label_map):
         self.root = root
+        self.model = model
+        self.label_map = label_map
+        
         self.root.title("Main Window")
         self.root.geometry("1000x600")
 
@@ -16,7 +20,6 @@ class ImageApp:
         self.spinner_label = None
         self.spinner_active = False
         self.spinner_dots = 0
-
         
         self.upload_button = tk.Button(root, text="Upload Image", command=self.upload_image)
         self.upload_button.pack(pady=20)
@@ -67,9 +70,19 @@ class ImageApp:
 
 
     def background_process(self):
-        time.sleep(5)
+        img = Image.open(self.uploaded_image_path).convert("RGB")
+        scores, predictions = self.model(img)
         
-        result_text = "1234"
+        all_same = all(pred == predictions[0] for pred in predictions)
+        if not all_same:
+            max_idx = scores.index(max(scores))
+            pred = predictions[max_idx]
+        else:
+            pred = predictions[0]
+        pred_label = self.label_map.get(pred, "Unknown")
+        original_label = os.path.basename(self.uploaded_image_path).split('.')[0][2:5]
+        
+        result_text = f"GT: {original_label}    PRED: {pred_label}"
         img = Image.open(self.uploaded_image_path).resize((200, 200))
         img1 = img.copy().resize((100, 100))
         img2 = img.copy().resize((100, 100))
