@@ -58,6 +58,8 @@ class UpsampleDataset(Dataset):
         
         if self.opt['phase'] == 'train':
             img_gt, img_lq = augment([hq, lq], self.opt['use_hflip'], self.opt['use_rot'])
+        else:
+            img_gt, img_lq = hq, lq
 
         img_gt, img_lq = img2tensor([img_gt, img_lq], bgr2rgb=True, float32=True)
         return {"gt": img_gt, "lq": img_lq}
