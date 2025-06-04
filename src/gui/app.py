@@ -96,8 +96,8 @@ class ImageApp:
         
         result_text = f"GT: {original_label}    PRED: {pred_label}"
         img = Image.open(self.uploaded_image_path).resize((200, 200))
-        img1 = img.copy().resize((100, 100))
-        img2 = img.copy().resize((100, 100))
+        img1 = img.copy().resize((150, 150))
+        img2 = img.copy().resize((150, 150))
 
         self.root.after(0, lambda: self.open_second_window(img, img1, img2, result_text))
 
@@ -128,8 +128,6 @@ class ImageApp:
         label_main_img = tk.Label(original_image_container, image=main_img_tk)
         label_main_img.image = main_img_tk  
         label_main_img.pack(expand=True, fill="both")
-
-        
         
         eye_detection_container = tk.Frame(top_images_frame)
         eye_detection_container.pack(side=tk.RIGHT, padx=10, expand=True, fill="both")
@@ -137,12 +135,10 @@ class ImageApp:
         label_eye_detection_title = tk.Label(eye_detection_container, text="Eye position detection", font=title_font)
         label_eye_detection_title.pack(pady=(0, 5))
         
-        
         eye_detection_img_tk = ImageTk.PhotoImage(main_img) 
         label_eye_detection_img = tk.Label(eye_detection_container, image=eye_detection_img_tk)
         label_eye_detection_img.image = eye_detection_img_tk  
         label_eye_detection_img.pack(expand=True, fill="both")
-
         
         segmentation_container_frame = tk.Frame(self.second_window)
         segmentation_container_frame.pack(pady=10, padx=10, fill="x", expand=True)
@@ -162,7 +158,6 @@ class ImageApp:
         label_small2 = tk.Label(segmentation_images_frame, image=small_img2_tk)
         label_small2.image = small_img2_tk  
         label_small2.pack(side=tk.LEFT, padx=5, expand=True, fill="both")
-
         
         textbox_frame = tk.Frame(self.second_window) 
         textbox_frame.pack(pady=10, padx=10, fill="x")
@@ -170,9 +165,7 @@ class ImageApp:
         textbox = tk.Entry(textbox_frame, justify='center', font=text_font)
         textbox.insert(0, result_text)
         
-        
         textbox.pack(fill="x", expand=True, ipady=5) 
-
         
         back_button = tk.Button(self.second_window, text="Back", command=self.go_back, font=text_font)
         back_button.pack(pady=(10, 20)) 
