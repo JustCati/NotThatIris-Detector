@@ -97,6 +97,11 @@ def main(args):
         classes=all_users,
         keep_unknown=True
     )
+    
+    mapper = train_dataset.get_mapper()
+    with open("label_map.txt", "w") as f:
+        for k, v in mapper.items():
+            f.write(f"{k}: {v}\n")
 
     cpu_count = multiprocessing.cpu_count() // 2
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=cpu_count)
@@ -163,9 +168,10 @@ def main(args):
     model.set_threshold(best_test_threshold)
     
     print("Evaluating on the test set...")
-    gt, pred = evaluate_mlp(model, test_dataloader)
-    _, frr, _, _, eer_index, eer_threshold = get_eer(gt, pred)
-    print(f"Eval EER: {frr[eer_index]:2f} at threshold {eer_threshold:2f} (index {eer_index:2f})")
+    gt, pred = evaluate_mlp(model, val_dataloader)
+    _, frr, _, _, val_eer_index, eer_threshold = get_eer(gt, pred)
+    print(f"Best Eval EER: {frr[val_eer_index]:2f} at threshold {eer_threshold:2f} (index {val_eer_index:2f})")
+    print(f"Real EER on validation set: {frr[eer_index]:2f} at threshold {best_test_threshold:2f}")
 
     model_checkpoint = torch.load(os.path.join(root_dir, "models", "best.ckpt"))
     model_checkpoint["threshold"] = best_test_threshold
