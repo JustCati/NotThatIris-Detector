@@ -1,5 +1,6 @@
 import os
 import cv2
+import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
 from torchvision.transforms.v2 import GaussianBlur
@@ -41,28 +42,28 @@ class UpsampleDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = self.gt[idx]
+        img_gt = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+        img_gt = cv2.resize(img_gt, (128, 128), interpolation=cv2.INTER_LINEAR)
+        img_lq = img_gt.copy()
+        h, w = img_lq.shape
+
+        scale = self.opt.get("scale", 1)
+        if scale > 1:
+            img_lq = cv2.resize(img_lq, (w // scale, h // scale), interpolation=cv2.INTER_LINEAR)
+
+        img_lq = cv2.GaussianBlur(img_lq, (11, 11), 5)
+        _, encoded_img = cv2.imencode('.jpg', img_lq, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+        img_lq = cv2.imdecode(encoded_img, cv2.IMREAD_GRAYSCALE)
         
-        hq = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        if hq.size[0] != 128:
-            hq = cv2.resize(hq, (128, 128), interpolation=cv2.INTER_LINEAR)
-        lq = hq.copy()
+        img_gt = img_gt[..., np.newaxis]
+        img_lq = img_lq[..., np.newaxis]
 
-        h, w = hq.shape[:2]
-        scale = self.opt["scale"]
-        lq = cv2.resize(lq, (w // scale, h // scale), interpolation=cv2.INTER_LINEAR)
-
-        lq = cv2.transpose(lq, (2, 0, 1))
-        lq = GaussianBlur(kernel_size=11, sigma=5)(lq)
-        lq = cv2.transpose(lq, (1, 2, 0))
-        lq = add_jpg_compression(lq, quality=50)
-        
-        if self.opt['phase'] == 'train':
-            img_gt, img_lq = augment([hq, lq], self.opt['use_hflip'], self.opt['use_rot'])
-        else:
-            img_gt, img_lq = hq, lq
-
-        img_gt, img_lq = img2tensor([img_gt, img_lq], bgr2rgb=True, float32=True)
+        img_gt, img_lq = img2tensor([img_gt, img_lq], bgr2rgb=False, float32=True)
         return {"gt": img_gt, "lq": img_lq}
+
+    def __len__(self):
+        return len(self.gt)
 
 
     def __len__(self):
