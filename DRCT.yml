@@ -19,8 +19,8 @@ datasets:
 
     # data loader
     use_shuffle: true
-    num_worker_per_gpu: 16
-    batch_size_per_gpu: 2
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 1
     dataset_enlarge_ratio: 1
     prefetch_mode: ~
 
@@ -35,12 +35,13 @@ datasets:
 network_g:
   type: DRCT
   upscale: 1
-  in_chans: 3
+  in_chans: 1
   img_size: 128
   window_size: 16
   compress_ratio: 3
   squeeze_factor: 30
   conv_scale: 0.01
+  gradient_accumulation_steps: 8
   overlap_ratio: 0.5
   img_range: 1.
   depths: [6, 6, 6, 6, 6, 6]
@@ -68,12 +69,13 @@ train:
     betas: [0.9, 0.99]
 
   scheduler:
-    type: MultiStepLR
-    milestones: [250000, 400000, 450000, 475000]
-    gamma: 0.5
+    type: CosineAnnealingRestartLR
+    periods: [101000, 101000, 101000, 101000, 101000]
+    restart_weights: [1, 1, 0.5, 0.5, 0.5]
+    eta_min: !!float 1e-7
 
-  total_iter: 500000
-  warmup_iter: -1  # no warm up
+  total_iter: 505000
+  warmup_iter: 5000
 
   # losses
   pixel_loss:
@@ -85,18 +87,18 @@ train:
 
 # validation settings
 val:
-  val_freq: !!float 5e3
+  val_freq: 15953
   save_img: false
   pbar: true
 
   metrics:
     psnr:
       type: WeightedPSNR
-      max_pixel_value: 255.0
+      max_pixel_value: 1.0
       better: higher  # the higher, the better. Default: higher
 
 # logging settings
 logger:
   print_freq: 100
-  save_checkpoint_freq: !!float 5e3
+  save_checkpoint_freq: 15953
   use_tb_logger: false
