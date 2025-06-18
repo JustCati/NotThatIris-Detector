@@ -46,11 +46,17 @@ class DRCTModelFinal(DRCTModel):
     
     
     def optimize_parameters(self, current_iter):
-        self.optimizer_g.zero_grad()
         self.output = self.net_g(self.lq)
 
-        self.feat_y = self.feat_extractor(self.gt) if hasattr(self, 'feat_extractor') else None
-        self.feat_pred = self.feat_extractor(self.output) if hasattr(self, 'feat_extractor') else None
+        if hasattr(self, "feat_extractor"):
+            gt_feat = self.gt.repeat(1, 3, 1, 1)
+            output_feat = self.output.repeat(1, 3, 1, 1)
+
+            self.feat_y = self.feat_extractor(gt_feat)
+            self.feat_pred = self.feat_extractor(output_feat)
+        else:
+            self.feat_y = None
+            self.feat_pred = None
 
         l_total = 0
         loss_dict = OrderedDict()
@@ -61,12 +67,16 @@ class DRCTModelFinal(DRCTModel):
         l_context = self.ctx_loss(self.feat_pred, self.feat_y)
         loss_dict['l_context'] = l_context
         l_total += l_context
-        
-        l_total.backward()
-        self.optimizer_g.step()
-        
-        self.log_dict = self.reduce_loss_dict(loss_dict)
 
-        if self.ema_decay > 0:
-            self.model_ema(self.ema_decay)
+        l_total = l_total /  self.gradient_accumulation_steps
+        l_total.backward()
+        
+        if current_iter % self.gradient_accumulation_steps == 0:
+            self.optimizer_g.step()
+            self.optimizer_g.zero_grad()
+
+            if self.ema_decay > 0:
+                self.model_ema(self.ema_decay)
+            
+        self.log_dict = self.reduce_loss_dict(loss_dict)
         
