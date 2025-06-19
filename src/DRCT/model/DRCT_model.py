@@ -66,12 +66,14 @@ class DRCTModelFinal(DRCTModel):
         loss_dict['l_pixel'] = l_pixel
         if hasattr(self, "ctx_loss"):
             l_total += l_pixel * self.pixel_weight_loss
+            loss_dict['l_pixel_wgt'] = l_pixel * self.pixel_weight_loss
         else:
             l_total += l_pixel
         
         if hasattr(self, "ctx_loss"):
             l_context = self.ctx_loss(self.feat_pred, self.feat_y)
             loss_dict['l_context'] = l_context
+            loss_dict["l_context_wgt"] = l_context * self.context_weight_loss
             l_total += l_context * self.context_weight_loss
 
         l_total = l_total /  self.gradient_accumulation_steps
