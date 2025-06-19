@@ -41,7 +41,6 @@ network_g:
   compress_ratio: 3
   squeeze_factor: 30
   conv_scale: 0.01
-  gradient_accumulation_steps: 8
   overlap_ratio: 0.5
   img_range: 1.
   depths: [6, 6, 6, 6, 6, 6]
@@ -68,6 +67,8 @@ train:
     weight_decay: 0
     betas: [0.9, 0.99]
 
+  gradient_accumulation_steps: 8
+
   scheduler:
     type: CosineAnnealingRestartLR
     periods: [101000, 101000, 101000, 101000, 101000]
@@ -84,6 +85,8 @@ train:
   context_loss:
     type: ContextLoss
     reduction: mean
+  pixel_loss_weight: 1.0
+  context_loss_weight: 0.2
 
 # validation settings
 val:
