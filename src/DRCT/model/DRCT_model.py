@@ -15,6 +15,10 @@ class DRCTModelFinal(DRCTModel):
     def __init__(self, opt):
         super(DRCTModelFinal, self).__init__(opt)
 
+        train_opt = self.opt["train"]
+        self.pixel_weight_loss = train_opt.get("pixel_loss_weight", 1)
+        self.context_weight_loss = train_opt.get("context_loss_weight", 1)
+        self.gradient_accumulation_steps = train_opt.get("gradient_accumulation_steps", 1)
         self.feat_extractor_path = self.opt.get('feat_extractor_path', None)
         if self.feat_extractor_path:
             self.feat_extractor = FeatureExtractor(self.feat_extractor_path).to(self.device)
@@ -39,7 +43,8 @@ class DRCTModelFinal(DRCTModel):
             self.net_g_ema.eval()
 
         self.pix_loss = build_loss(train_opt['pixel_loss']).to(self.device)
-        self.ctx_loss = build_loss(train_opt['context_loss']).to(self.device)
+        if train_opt.get("context_loss") is not None:
+            self.ctx_loss = build_loss(train_opt['context_loss']).to(self.device)
 
         self.setup_optimizers()
         self.setup_schedulers()
@@ -48,25 +53,26 @@ class DRCTModelFinal(DRCTModel):
     def optimize_parameters(self, current_iter):
         self.output = self.net_g(self.lq)
 
-        if hasattr(self, "feat_extractor"):
+        if hasattr(self, "feat_extractor") and hasattr(self, "ctx_loss"):
             gt_feat = self.gt.repeat(1, 3, 1, 1)
             output_feat = self.output.repeat(1, 3, 1, 1)
 
             self.feat_y = self.feat_extractor(gt_feat)
             self.feat_pred = self.feat_extractor(output_feat)
-        else:
-            self.feat_y = None
-            self.feat_pred = None
 
         l_total = 0
         loss_dict = OrderedDict()
         l_pixel = self.pix_loss(self.output, self.gt)
         loss_dict['l_pixel'] = l_pixel
-        l_total += l_pixel
+        if hasattr(self, "ctx_loss"):
+            l_total += l_pixel * self.pixel_weight_loss
+        else:
+            l_total += l_pixel
         
-        l_context = self.ctx_loss(self.feat_pred, self.feat_y)
-        loss_dict['l_context'] = l_context
-        l_total += l_context
+        if hasattr(self, "ctx_loss"):
+            l_context = self.ctx_loss(self.feat_pred, self.feat_y)
+            loss_dict['l_context'] = l_context
+            l_total += l_context * self.context_weight_loss
 
         l_total = l_total /  self.gradient_accumulation_steps
         l_total.backward()
