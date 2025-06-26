@@ -1,3 +1,4 @@
+import torch
 import argparse
 import tkinter as tk
 
@@ -18,7 +19,10 @@ def main(args):
     backbone.eval()
     
     in_feature = backbone.get_vector_dim()
+    
+    threshold = torch.load(args.mlp)["threshold"]
     mlp = MLPMatcher.load_from_checkpoint(args.mlp, in_feature=in_feature, num_classes=CLASSES)
+    mlp.set_threshold(threshold)
     mlp.to(args.device)
     mlp.eval()
     
@@ -46,7 +50,7 @@ def main(args):
         label_map = {int(elem.split(": ")[0]): int(elem.split(": ")[1]) for elem in label_map}
     
     root = tk.Tk()
-    _ = ImageApp(root, model=iris_detector, label_map=label_map)
+    _ = ImageApp(root, model=iris_detector, label_map=label_map, csv=args.csv_path, th=threshold)
     root.mainloop()
 
 
@@ -60,5 +64,6 @@ if __name__ == "__main__":
     parser.add_argument("--sr", type=str, default="", help="Path to the super-resolution model", required=False)
     parser.add_argument("--mlp", type=str, default="", help="Path to the MLP model", required=True)
     parser.add_argument("--device", type=str, default="cpu", help="Device to run the model on (cpu or cuda)")
+    parser.add_argument("--csv_path", type=str, default="", help="Path to the annotation csv")
     args = parser.parse_args()
     main(args)

@@ -1,16 +1,20 @@
 import os
 import threading
 import tkinter as tk
+import pandas as pd
 from PIL import Image
 from PIL import Image, ImageTk
 from tkinter import filedialog, messagebox
 
 
 class ImageApp:
-    def __init__(self, root, model, label_map):
+    def __init__(self, root, model, label_map, csv, th):
+        self.csv = csv
         self.root = root
         self.model = model
+        self.threshold = th
         self.label_map = label_map
+        self.csv = pd.read_csv(self.csv)
         
         self.root.title("Main Window")
         self.root.geometry("1000x600")
@@ -87,16 +91,17 @@ class ImageApp:
         img_pil = Image.open(self.uploaded_image_path).convert("RGB") 
         scores, predictions, data_dict = self.model(img_pil)
         
+        max_idx = scores.index(max(scores))
         all_same = all(pred == predictions[0] for pred in predictions)
-        if not all_same:
-            max_idx = scores.index(max(scores))
-            pred = predictions[max_idx]
-        else:
-            pred = predictions[0]
+
+        pred = predictions[max_idx] if not all_same else predictions[0]
         pred_label = self.label_map.get(pred, "Unknown")
-        original_label = os.path.basename(self.uploaded_image_path).split('.')[0][2:5]
-        result_text = f"GT: {original_label}    PRED: {pred_label}"
+        if scores[max_idx] < self.threshold:
+            pred_label = "-1"
         
+        original_label = os.path.basename(self.uploaded_image_path).split('.')[0][2:5]
+        original_label = self.csv[self.csv["ImagePath"].str.contains(f"/{original_label}/")].reset_index().iloc[0]["Label"]
+        result_text = f"GT: {original_label}    PRED: {pred_label}    SCORE: {str(scores[max_idx])[:4]}"
         
         main_display_img = Image.open(self.uploaded_image_path).resize((200, 200))
         eye_pos_left_pil = data_dict["det"][0].copy().resize((150, 150))
