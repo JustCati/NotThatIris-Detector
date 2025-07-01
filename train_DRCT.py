@@ -1,43 +1,46 @@
+import os
 import argparse
-import os.path as osp
-
-import warnings
-warnings.filterwarnings("ignore")
 
 from external.DRCT.drct.archs import *
-from external.DRCT.drct.data import *
-from external.DRCT.drct.models import *
-from basicsr.train import train_pipeline
+from src.DRCT.model.DRCT_model import *
+from src.DRCT.data.UpsampleDataset_dataset import *
+from src.DRCT.losses.WeightedL1Loss_loss import *
+from src.DRCT.metrics.WeightedPSNR_metric import *
+from src.DRCT.losses.ContextLoss_loss import *
 
-from src.utils.dataset_utils.super_resolution import create_dataset
+from src.models.yolo import getYOLO
+from src.utils.dataset_utils.iris import normalize_dataset, split_by_sample
+
+from basicsr.train import train_pipeline
 
 
 
 def main(args):
-    data_path = args.path
-    if not osp.exists(data_path):
-        raise FileNotFoundError(f'{data_path} does not exist')
+    root_dir = args.output_path
+    dataset_path = args.dataset_path
+    root_dir = os.path.join(root_dir, "DRCT")
 
-    iris_path = osp.join(data_path, 'Iris-Thousand')
-    images_path = osp.join(iris_path, 'images')
-    dataset_path = osp.join(iris_path, 'sr')
-    ckpt_path = osp.join('ckpts', 'DRCT')
+    test_csv_path = os.path.join(dataset_path, "test_iris.csv")
+    train_csv_path = os.path.join(dataset_path, "train_iris.csv")
 
-    TRAIN_SPLIT_RATIO = 0.999
-    SCALE_FACTOR = args.down_scale_factor
-    create_dataset(images_path, dataset_path, SCALE_FACTOR, TRAIN_SPLIT_RATIO)
+    if not os.path.exists(train_csv_path) or not os.path.exists(test_csv_path):
+        split_by_sample(dataset_path)
 
-    #* Train DRCT model
-    train_pipeline(ckpt_path)
+    if not os.path.exists(os.path.join(dataset_path, "normalized")):
+        print("Normalizing iris images...")
+        yolo_instance = getYOLO(args.yolo_path, task="segment", device="cuda", inference=True)
+        normalize_dataset(yolo_instance, dataset_path)
+
+    train_pipeline(os.path.dirname(__file__))
 
 
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, default='datasets', help='directory of the data')
-    parser.add_argument("--train", type=bool, default=True, help='train or test')
-    parser.add_argument("-opt", type=str, default='', help='path to the option yaml file')
-    parser.add_argument('--force_yml', nargs='+', default=None, help='Force to update yml files. Examples: train:ema_decay=0.999')
-    parser.add_argument('--down_scale_factor', type=int, default=4, help='down scale factor for generating low quality images')
+    parser.add_argument("--dataset_path", type=str, default=os.path.join(os.path.dirname(__file__), "datasets", "Iris-Thousand"))
+    parser.add_argument("--output_path", type=str, default=os.path.join(os.path.dirname(__file__), "ckpts"))
+    parser.add_argument("--yolo_path", type=str, default="")
+    parser.add_argument("-opt", type=str, default=os.path.join(os.path.dirname(__file__), "DRCT.yml")),
     args = parser.parse_args()
     main(args)

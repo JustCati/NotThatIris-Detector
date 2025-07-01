@@ -1,18 +1,47 @@
 import os
+import subprocess
 import multiprocessing
-from ultralytics import YOLOv10
+from ultralytics import YOLO
 
 
 
-def getYOLO(checkpoint_path: str, device: str = 'cpu') -> YOLOv10:
-    if not os.path.exists(checkpoint_path):
-        raise ValueError('Checkpoint path does not exist')
-    model = YOLOv10(checkpoint_path)
-    model.to(device)
+def getYOLO(checkpoint_path: str, task: str, device: str = 'cpu', inference: bool = False):
+    download = False
+    if checkpoint_path == None or not os.path.exists(checkpoint_path):
+        print("Checkpoint path does not exist, downloading YOLO model...")
+        download = True
+    if download:
+        if task == 'segment':
+            link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m-seg.pt"
+        elif task == 'detection':
+            link = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11s.pt"
+        else:
+            raise ValueError("Task must be either 'segment' or 'detection'")
+        
+        model_path = os.path.basename(link)
+        if not os.path.exists(model_path):
+            print("Downloading YOLO model...")
+            subprocess.run(["wget", link])
+            print("Download complete.")
+        checkpoint_path = model_path
+
+    model = YOLO(checkpoint_path, task=task)
+    if inference:
+        model.to(device)
     return model
 
 
-def train(model: YOLOv10, 
+
+def detect(model, image, conf=0.5, device: str = 'cpu'):
+    results = model.predict(image,
+                            conf = conf,
+                            device = device,
+                            verbose = False)
+    return results[0]
+
+
+
+def train(model: YOLO, 
           yaml_file: str,
           epochs: int,
           patience: int,
@@ -31,6 +60,8 @@ def train(model: YOLOv10,
                           workers=cpu_workers,
                           save_period=5,
                           device=device,
+                          cls=5.0,
+                          dropout=0.3,
                           resume=resume,
                           val=True,
                           plots=True,

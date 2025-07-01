@@ -23,6 +23,13 @@ class MLPMatcher(pl.LightningModule):
             print(self.Classifier)
 
 
+    def set_extractor(self, extractor):
+        if isinstance(extractor, nn.Module):
+            self.extractor = extractor
+        else:
+            raise ValueError("Extractor must be an instance of nn.Module")
+
+
     def set_threshold(self, threshold):
         self.threshold = threshold
 
@@ -38,6 +45,13 @@ class MLPMatcher(pl.LightningModule):
         return x
 
 
+    def on_save_checkpoint(self, checkpoint):
+        toPop = [key for key in checkpoint["state_dict"].keys() if key.startswith("extractor.")]
+        for key in toPop:
+            checkpoint["state_dict"].pop(key)
+        checkpoint["threshold"] = self.threshold
+
+
     def training_step(self, batch, batch_idx):
         x, y = batch
         y = y.view(-1).long()
@@ -45,6 +59,7 @@ class MLPMatcher(pl.LightningModule):
 
         loss = nn.CrossEntropyLoss()(y_hat, y)
         self._losses.append(loss.item())
+        self.log("train/loss", loss, on_step=True, on_epoch=False, prog_bar=True)
         return loss
 
 
@@ -78,8 +93,8 @@ class MLPMatcher(pl.LightningModule):
         _, frr, _, _, eer_index, _ = get_eer(self._val_y, self._val_y_pred)
         accuracy = accuracy_score(self._val_y_acc, self._val_y_pred_acc)
 
-        self.log("eval/accuracy", accuracy)
-        self.log("eval/eer", frr[eer_index])
+        self.log("eval/accuracy", accuracy, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("eval/eer", frr[eer_index], on_step=False, on_epoch=True, prog_bar=True)
         self.log("eval/acc+eer", accuracy - frr[eer_index])
         self.log("train/loss", self._loss_value)
 

@@ -3,16 +3,15 @@ import torch.nn as nn
 from sklearn.metrics import f1_score
 
 import lightning as pl
-from torchvision.models import resnet50
-from torchvision.models.resnet import ResNet50_Weights
+from torchvision.models import efficientnet_v2_s
 
 import warnings
 warnings.filterwarnings("ignore")
 
 
 
-class Resnet(pl.LightningModule):
-    def __init__(self, batch_size=32, num_classes=2000, verbose = False):
+class EfficientNet(pl.LightningModule):
+    def __init__(self, num_classes=2000, verbose = False):
         super().__init__()
         self._y = []
         self._y_pred = []
@@ -21,9 +20,12 @@ class Resnet(pl.LightningModule):
         self._training_loss = []
         self._loss_value = 1_000_000.0 # Just a big number
 
-        self.batch_size = batch_size
-        self.model = resnet50(ResNet50_Weights.IMAGENET1K_V2)
-        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
+        self.model = efficientnet_v2_s(weights="DEFAULT")
+        self.vector_dim = self.model.classifier[1].in_features
+        
+        if num_classes is not None:
+            self.model.classifier = nn.Linear(self.vector_dim, num_classes)
+        
         if verbose:
             print(self.model)
 
@@ -92,19 +94,22 @@ class Resnet(pl.LightningModule):
 
 
 class FeatureExtractor(pl.LightningModule):
-    def __init__(self, model=None, model_path=None, num_classes=819):
+    def __init__(self, model_path=None):
         super().__init__()
-        if model is not None:
-            self.model = model
-        elif model_path is not None:
-            num_classes = num_classes if num_classes is not None else 819
-            self.model = Resnet.load_from_checkpoint(model_path, num_classes=num_classes)
+        if model_path is not None:
+            state_dict = torch.load(model_path, map_location="cpu")["state_dict"]
+            src_num_classes = state_dict["model.classifier.weight"].shape[0]
+            self.model = EfficientNet.load_from_checkpoint(model_path, num_classes=src_num_classes)
         else:
-            self.model = Resnet(num_classes=num_classes)
-        self.model.model.fc = nn.Identity()
+            self.model = EfficientNet()
+        self.model.model.classifier = nn.Identity()
         self.model.eval()
 
 
     def forward(self, x):
         with torch.no_grad():
             return self.model(x)
+
+    
+    def get_vector_dim(self):
+        return self.model.vector_dim
